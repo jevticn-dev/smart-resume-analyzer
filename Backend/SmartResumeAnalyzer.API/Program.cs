@@ -1,29 +1,18 @@
-using Microsoft.EntityFrameworkCore;
-using SmartResumeAnalyzer.Infrastructure.Data;
+using SmartResumeAnalyzer.API.Extensions;
+using SmartResumeAnalyzer.API.Middleware;
+using SmartResumeAnalyzer.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-                                            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddCors(options => 
-{
-    options.AddPolicy("AllowAngular", policy => 
-    {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
-
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApiServices();
+builder.Services.AddJwtAuthentication();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (app.Environment.IsDevelopment()) 
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -31,6 +20,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
