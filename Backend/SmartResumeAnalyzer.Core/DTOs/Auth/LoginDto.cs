@@ -1,8 +1,13 @@
-﻿namespace SmartResumeAnalyzer.Core.DTOs.Auth
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SmartResumeAnalyzer.Core.DTOs.Auth;
+
+public class LoginDto
 {
-    public class LoginDto
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Invalid email format.")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required.")]
+    public string Password { get; set; } = string.Empty;
 }

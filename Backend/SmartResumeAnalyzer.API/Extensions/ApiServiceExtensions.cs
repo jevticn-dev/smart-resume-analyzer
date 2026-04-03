@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using SmartResumeAnalyzer.Core.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using SmartResumeAnalyzer.API.Filters;
 
 namespace SmartResumeAnalyzer.API.Extensions
 {
@@ -13,6 +14,7 @@ namespace SmartResumeAnalyzer.API.Extensions
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddScoped<RateLimitFilter>();
 
             services.AddCors(options =>
             {

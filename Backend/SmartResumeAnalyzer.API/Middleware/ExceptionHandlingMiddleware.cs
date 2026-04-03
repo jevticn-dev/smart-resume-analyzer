@@ -30,7 +30,7 @@ namespace SmartResumeAnalyzer.API.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception");
-                await WriteErrorResponse(context, 500, "There is an error on the server side");
+                await WriteErrorResponse(context, 500, "An internal server error occurred.");
             }
         }
 

@@ -27,10 +27,10 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-                throw new UnauthorizedException("Wrong email or password");
+                throw new UnauthorizedException("Invalid email or password.");
 
             if (!user.IsActive)
-                throw new UnauthorizedException("User is deactivated");
+                throw new UnauthorizedException("Account is deactivated.");
 
             return GenerateAuthResponse(user);
         }
@@ -39,7 +39,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
         {
             if (await _userRepository.EmailExistsAsync(dto.Email))
             {
-                throw new ConflictException("User with this email allready exists");
+                throw new ConflictException("User with this email allready exists.");
             }
 
             var user = new User

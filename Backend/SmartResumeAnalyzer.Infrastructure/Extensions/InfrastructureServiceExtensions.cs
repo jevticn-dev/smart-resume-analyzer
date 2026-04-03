@@ -16,9 +16,11 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            services.Configure<RateLimitSettings>(configuration.GetSection("RateLimitSettings"));
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRateLimitService, RateLimitService>();
 
             return services;
         }
