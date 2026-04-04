@@ -19,3 +19,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+smart-resume-analyzer/src/environments/environment.ts
+smart-resume-analyzer/src/environments/environment.development.ts
