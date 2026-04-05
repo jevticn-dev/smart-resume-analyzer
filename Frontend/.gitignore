@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.angular/cache/
+
+# Environment (opcionalno, zavisi da li chekujes env fajlove)
+# src/environments/environment*.ts
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+smart-resume-analyzer/src/environments/environment.ts
+smart-resume-analyzer/src/environments/environment.development.ts

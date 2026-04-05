@@ -1,0 +1,94 @@
+## Build results
+bin/
+obj/
+out/
+publish/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider / VS Code
+.idea/
+.vscode/
+*.code-workspace
+
+## Logs
+*.log
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## .NET Core / ASP.NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+*.nuget.props
+*.nuget.targets
+
+## Dotnet CLI
+.dotnet/
+*.runtimeconfig.dev.json
+
+## Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Publish output
+*.publishsettings
+*.pubxml
+*.pubxml.user
+
+## Azure / deployment
+*.azurePubxml
+
+## Secrets (IMPORTANT)
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+## EF Core migrations snapshots (optional)
+# Uncomment if you don't want migrations tracked
+# Migrations/
+
+## Resharper
+_ReSharper*/
+*.DotSettings.user
+
+## DotCover
+*.dotCover
+
+## StyleCop
+StyleCopReport.xml
+
+## Backup & temp files
+*.bak
+*.tmp
+*.temp
+
+## Node (if your API has frontend or uses npm)
+node_modules/
+dist/
+build/
+
+## Environment files
+.env
+.env.*
+
+## Docker
+docker-compose.override.yml
+
+## Coverage
+coverage/

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SmartResumeAnalyzer.API/SmartResumeAnalyzer.API.csproj" />
+  <Project Path="SmartResumeAnalyzer.Core/SmartResumeAnalyzer.Core.csproj" />
+  <Project Path="SmartResumeAnalyzer.Infrastructure/SmartResumeAnalyzer.Infrastructure.csproj" />
+</Solution>
