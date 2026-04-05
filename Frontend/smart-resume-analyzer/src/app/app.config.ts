@@ -6,13 +6,16 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt-interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideAnimationsAsync(),
+    // provideAnimationsAsync(),
+    provideAnimations(),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     providePrimeNG({
       theme: {
@@ -21,6 +24,7 @@ export const appConfig: ApplicationConfig = {
           darkModeSelector: '.dark-mode'
         }
       }
-    })
+    }),
+    MessageService
   ]
 };

@@ -1,1 +1,32 @@
-<p>navbar works!</p>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a routerLink="/" class="navbar-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">ResumeAI</span>
+    </a>
+
+    <div class="navbar-actions">
+      @if (auth.isAuthenticated()) {
+        <span class="navbar-user">{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</span>
+        <p-button
+          label="Logout"
+          severity="secondary"
+          size="small"
+          (onClick)="logout()"
+        />
+      } @else {
+        <p-button
+          label="Login"
+          severity="secondary"
+          size="small"
+          (onClick)="navigateTo('/login')"
+        />
+        <p-button
+          label="Get Started"
+          size="small"
+          (onClick)="navigateTo('/register')"
+        />
+      }
+    </div>
+  </div>
+</nav>

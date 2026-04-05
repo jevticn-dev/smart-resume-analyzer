@@ -1,1 +1,49 @@
-<p>login works!</p>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="auth-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">ResumeAI</span>
+      </a>
+      <h1>Welcome back</h1>
+      <p>Sign in to your account to continue</p>
+    </div>
+
+    <div class="auth-form">
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input
+            pInputText
+            id="email"
+            type="email"
+            [(ngModel)]="form.email"
+          />
+          <label for="email">Email</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <p-password
+            inputId="password"
+            [(ngModel)]="form.password"
+            [feedback]="false"
+            [toggleMask]="true"
+          />
+          <label for="password">Password</label>
+        </p-floatlabel>
+      </div>
+
+      <p-button
+        label="Sign In"
+        [loading]="loading"
+        (onClick)="submit()"
+      />
+    </div>
+
+    <div class="auth-footer">
+      <span>Don't have an account?</span>
+      <a routerLink="/register">Create one</a>
+    </div>
+  </div>
+</div>

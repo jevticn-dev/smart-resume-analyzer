@@ -1,1 +1,77 @@
-<p>register works!</p>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="auth-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">ResumeAI</span>
+      </a>
+      <h1>Create an account</h1>
+      <p>Start analyzing your resume for free</p>
+    </div>
+
+    <div class="auth-form">
+      <div class="form-row">
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="firstName"
+              type="text"
+              [(ngModel)]="form.firstName"
+            />
+            <label for="firstName">First Name</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="lastName"
+              type="text"
+              [(ngModel)]="form.lastName"
+            />
+            <label for="lastName">Last Name</label>
+          </p-floatlabel>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input
+            pInputText
+            id="email"
+            type="email"
+            [(ngModel)]="form.email"
+          />
+          <label for="email">Email</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <p-password
+            inputId="password"
+            [(ngModel)]="form.password"
+            [toggleMask]="true"
+            [feedback]="true"
+            [strongRegex]="passwordRegex"
+          />
+          <label for="password">Password</label>
+        </p-floatlabel>
+        <small class="field-hint">Min 8 characters, one uppercase, one lowercase, one number</small>
+      </div>
+
+      <p-button
+        label="Create Account"
+        [loading]="loading"
+        (onClick)="submit()"
+      />
+    </div>
+
+    <div class="auth-footer">
+      <span>Already have an account?</span>
+      <a routerLink="/login">Sign in</a>
+    </div>
+  </div>
+</div>

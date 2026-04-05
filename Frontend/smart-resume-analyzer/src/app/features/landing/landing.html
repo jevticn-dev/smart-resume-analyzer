@@ -1,1 +1,58 @@
-<p>landing works!</p>
+<app-navbar />
+
+<main class="landing">
+  <section class="hero">
+    <div class="hero-container">
+      <div class="hero-badge">AI-Powered Resume Analysis</div>
+      <h1 class="hero-title">
+        Land your dream job with a
+        <span class="hero-highlight">smarter CV</span>
+      </h1>
+      <p class="hero-subtitle">
+        Upload your resume, paste the job description, and get instant AI feedback
+        on how to improve your chances of getting hired.
+      </p>
+      <div class="hero-actions">
+        <p-button
+          label="Analyze My Resume"
+          size="large"
+          (onClick)="navigateTo('/register')"
+        />
+        <p-button
+          label="See How It Works"
+          severity="secondary"
+          size="large"
+          (onClick)="navigateTo('/login')"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="features-container">
+      <h2 class="features-title">Everything you need to get hired</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">◎</div>
+          <h3>Match Score</h3>
+          <p>See exactly how well your CV matches the job description with a detailed score breakdown.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◈</div>
+          <h3>Missing Keywords</h3>
+          <p>Identify keywords from the job posting that are missing from your resume.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3>Track Applications</h3>
+          <p>Manage all your job applications in one place and track their status.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">◇</div>
+          <h3>Version History</h3>
+          <p>Compare different versions of your CV and see your improvement over time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
