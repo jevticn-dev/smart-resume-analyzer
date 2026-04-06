@@ -20,6 +20,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing').then(m => m.Landing)
   },
   {
+    path: 'analyze',
+    loadComponent: () => import('./features/analysis/analyze/analyze').then(m => m.Analyze)
+  },
+  {
+    path: 'analysis/result',
+    loadComponent: () => import('./features/analysis/result/result').then(m => m.Result)
+  },
+  {
     path: '**',
     redirectTo: ''
   }
