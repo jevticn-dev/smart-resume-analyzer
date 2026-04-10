@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartResumeAnalyzer.API.Filters;
 using SmartResumeAnalyzer.Core.DTOs.Analysis;
-using SmartResumeAnalyzer.Core.Entities;
 using SmartResumeAnalyzer.Core.Exceptions;
 using SmartResumeAnalyzer.Core.Interfaces;
 using SmartResumeAnalyzer.Infrastructure.Data;
@@ -17,24 +17,25 @@ namespace SmartResumeAnalyzer.API.Controllers
         private readonly IAiAnalysisService _aiAnalysisService;
         private readonly IPdfParserService _pdfParserService;
         private readonly IFileStorageService _fileStorageService;
-        private readonly IRateLimitService _rateLimitService;
+        private readonly IProjectService _projectService;
         private readonly AppDbContext _context;
 
         public AnalysisController(
             IAiAnalysisService aiAnalysisService,
             IPdfParserService pdfParserService,
             IFileStorageService fileStorageService,
-            IRateLimitService rateLimitService,
+            IProjectService projectService,
             AppDbContext context)
         {
             _aiAnalysisService = aiAnalysisService;
             _pdfParserService = pdfParserService;
             _fileStorageService = fileStorageService;
-            _rateLimitService = rateLimitService;
+            _projectService = projectService;
             _context = context;
         }
 
         [HttpPost("analyze")]
+        [ServiceFilter(typeof(RateLimitFilter))]
         public async Task<IActionResult> Analyze([FromForm] AnalysisRequestDto request, IFormFile cvFile)
         {
             if (cvFile == null || cvFile.Length == 0)
@@ -46,14 +47,9 @@ namespace SmartResumeAnalyzer.API.Controllers
             var userId = GetUserId();
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            if (!await _rateLimitService.IsAllowedAsync(userId, ipAddress))
-                throw new RateLimitExceededException("Daily analysis limit reached. Please try again tomorrow.");
-
             string cvText;
             using (var stream = cvFile.OpenReadStream())
-            {
                 cvText = _pdfParserService.ExtractText(stream);
-            }
 
             if (string.IsNullOrWhiteSpace(cvText))
                 throw new AppException("Could not extract text from the provided PDF. Please ensure the file is not scanned or image-based.");
@@ -64,58 +60,41 @@ namespace SmartResumeAnalyzer.API.Controllers
                 request.JobDescription,
                 request.SeniorityLevel);
 
-            await _rateLimitService.RecordCallAsync(userId, ipAddress);
-
-            if (userId.HasValue)
-                await SaveAnalysisAsync(result, request, cvFile, userId.Value);
-
-            return Ok(result);
-        }
-
-        private async Task SaveAnalysisAsync(AnalysisResultDto result, AnalysisRequestDto request, IFormFile cvFile, Guid userId)
-        {
             string storedFileName;
             using (var stream = cvFile.OpenReadStream())
-            {
                 storedFileName = await _fileStorageService.SaveAsync(stream, cvFile.FileName);
-            }
 
-            var project = new Project
+            var log = new Core.Entities.AnalysisLog
             {
                 UserId = userId,
-                Title = request.JobTitle,
+                IpAddress = ipAddress,
                 JobTitle = request.JobTitle,
                 JobDescription = request.JobDescription,
-                Seniority = request.SeniorityLevel
-            };
-
-            await _context.Projects.AddAsync(project);
-            await _context.SaveChangesAsync();
-
-            var cvVersion = new CvVersion
-            {
-                ProjectId = project.Id,
-                VersionNumber = 1,
+                SeniorityLevel = request.SeniorityLevel,
                 OriginalFileName = cvFile.FileName,
-                StoredFileName = storedFileName
+                StoredFileName = storedFileName,
+                ResultJson = JsonSerializer.Serialize(result)
             };
 
-            await _context.CvVersions.AddAsync(cvVersion);
+            await _context.AnalysisLogs.AddAsync(log);
             await _context.SaveChangesAsync();
 
-            var analysis = new Analysis
+            result.AnalysisLogId = log.Id;
+
+            if (userId.HasValue)
             {
-                CvVersionId = cvVersion.Id,
-                MatchScore = result.MatchScore,
-                StrengthsJson = JsonSerializer.Serialize(result.Strengths),
-                WeaknessesJson = JsonSerializer.Serialize(result.Weaknesses),
-                MissingKeywordsJson = JsonSerializer.Serialize(result.MissingKeywords),
-                SuggestionsJson = JsonSerializer.Serialize(result.Suggestions),
-                Summary = result.Summary
-            };
+                Guid projectId;
+                using (var stream = cvFile.OpenReadStream())
+                {
+                    projectId = await _projectService.SaveAnalysisAsProjectAsync(
+                        result, request.JobTitle, request.JobDescription, request.SeniorityLevel,
+                        stream, cvFile.FileName, userId.Value);
+                }
 
-            await _context.Analyses.AddAsync(analysis);
-            await _context.SaveChangesAsync();
+                result.ProjectId = projectId;
+            }
+
+            return Ok(result);
         }
 
         private Guid? GetUserId()

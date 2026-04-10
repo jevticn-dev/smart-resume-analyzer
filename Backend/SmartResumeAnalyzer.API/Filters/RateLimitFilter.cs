@@ -19,14 +19,13 @@ namespace SmartResumeAnalyzer.API.Filters
             var userId = GetUserId(context.HttpContext);
             var ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            if (!await _rateLimitService.IsAllowedAsync(userId, ipAddress)) 
-            {
-                throw new AppException("Daily analysis limit reached. Please try again tomorrow.", 429);
-            }
+            if (!await _rateLimitService.IsAllowedAsync(userId, ipAddress))
+                throw new RateLimitExceededException("Daily analysis limit reached. Please try again tomorrow.");
 
-            await next();
+            var executedContext = await next();
 
-            await _rateLimitService.RecordCallAsync(userId, ipAddress);
+            if (executedContext.Exception == null || executedContext.ExceptionHandled)
+                await _rateLimitService.RecordCallAsync(userId, ipAddress);
         }
 
         private static Guid? GetUserId(HttpContext context) 

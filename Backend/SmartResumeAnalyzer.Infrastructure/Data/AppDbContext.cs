@@ -13,6 +13,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Data
         public DbSet<Analysis> Analyses => Set<Analysis>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<ApiUsage> ApiUsage => Set<ApiUsage>();
+        public DbSet<AnalysisLog> AnalysisLogs => Set<AnalysisLog>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -80,6 +81,17 @@ namespace SmartResumeAnalyzer.Infrastructure.Data
                       .WithMany(u => u.ApiUsages)
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AnalysisLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+                entity.HasIndex(e => new { e.IpAddress, e.CreatedAt });
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

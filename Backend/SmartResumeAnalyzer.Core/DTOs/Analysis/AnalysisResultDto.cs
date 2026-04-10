@@ -8,6 +8,8 @@
         public List<string> MissingKeywords { get; set; } = [];
         public List<SuggestionDto> Suggestions { get; set; } = [];
         public string Summary { get; set; } = string.Empty;
+        public Guid? AnalysisLogId { get; set; }
+        public Guid? ProjectId { get; set; }
     }
 
     public class SuggestionDto
