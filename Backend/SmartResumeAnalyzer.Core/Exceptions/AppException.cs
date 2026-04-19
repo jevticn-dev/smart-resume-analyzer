@@ -29,4 +29,8 @@
     {
         public ForbiddenException(string message) : base(message, 403) { }
     }
+    public class RateLimitExceededException : AppException
+    {
+        public RateLimitExceededException(string message) : base(message, 429) { }
+    }
 }

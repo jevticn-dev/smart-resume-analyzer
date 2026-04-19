@@ -1,0 +1,134 @@
+<div class="panel-hero">
+  <div class="score-wrapper">
+    <svg class="score-svg" viewBox="0 0 120 120">
+      <circle
+        cx="60" cy="60" r="54"
+        fill="none"
+        stroke="#E2E8F0"
+        stroke-width="10"
+      />
+      <circle
+        cx="60" cy="60" r="54"
+        fill="none"
+        [attr.stroke]="scoreColor()"
+        stroke-width="10"
+        stroke-linecap="round"
+        [attr.stroke-dasharray]="2 * 3.14159 * 54"
+        [attr.stroke-dashoffset]="scoreDashOffset()"
+        class="score-arc"
+      />
+    </svg>
+    <div class="score-inner">
+      <span class="score-number" [style.color]="scoreColor()">{{ result().matchScore }}</span>
+      <span class="score-label">Match Score</span>
+    </div>
+  </div>
+
+  <div class="summary-text">
+    <p>{{ result().summary }}</p>
+  </div>
+</div>
+
+<p-divider />
+
+<div class="result-grid">
+  <p-card styleClass="result-card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <i class="pi pi-check-circle card-icon icon-success"></i>
+        <span>Strengths</span>
+      </div>
+    </ng-template>
+    <ul class="result-list">
+      @for (item of result().strengths; track item) {
+        <li class="result-list-item">
+          <i class="pi pi-check icon-success"></i>
+          <span>{{ item }}</span>
+        </li>
+      }
+    </ul>
+  </p-card>
+
+  <p-card styleClass="result-card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <i class="pi pi-times-circle card-icon icon-danger"></i>
+        <span>Weaknesses</span>
+      </div>
+    </ng-template>
+    <ul class="result-list">
+      @for (item of result().weaknesses; track item) {
+        <li class="result-list-item">
+          <i class="pi pi-times icon-danger"></i>
+          <span>{{ item }}</span>
+        </li>
+      }
+    </ul>
+  </p-card>
+
+  <p-card styleClass="result-card keywords-card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <i class="pi pi-tag card-icon icon-warn"></i>
+        <span>Missing Keywords</span>
+      </div>
+    </ng-template>
+    <div class="keywords-grid">
+      @for (keyword of result().missingKeywords; track keyword) {
+        <p-tag [value]="keyword" severity="warn" />
+      }
+    </div>
+  </p-card>
+</div>
+
+<div class="suggestions-section">
+  <h2>Suggestions</h2>
+
+  @if (highSuggestions().length) {
+    <div class="suggestion-group">
+      <div class="suggestion-group-header">
+        <p-tag value="High Priority" severity="danger" />
+      </div>
+      <div class="suggestion-list">
+        @for (s of highSuggestions(); track s.text) {
+          <div class="suggestion-item suggestion-high">
+            <i class="pi pi-arrow-circle-up"></i>
+            <span>{{ s.text }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (mediumSuggestions().length) {
+    <div class="suggestion-group">
+      <div class="suggestion-group-header">
+        <p-tag value="Medium Priority" severity="warn" />
+      </div>
+      <div class="suggestion-list">
+        @for (s of mediumSuggestions(); track s.text) {
+          <div class="suggestion-item suggestion-medium">
+            <i class="pi pi-arrow-right-circle"></i>
+            <span>{{ s.text }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (lowSuggestions().length) {
+    <div class="suggestion-group">
+      <div class="suggestion-group-header">
+        <p-tag value="Low Priority" severity="success" />
+      </div>
+      <div class="suggestion-list">
+        @for (s of lowSuggestions(); track s.text) {
+          <div class="suggestion-item suggestion-low">
+            <i class="pi pi-info-circle"></i>
+            <span>{{ s.text }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

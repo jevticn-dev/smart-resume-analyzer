@@ -1,0 +1,45 @@
+<app-navbar />
+
+<div class="result-container">
+  @if (isConverting()) {
+    <div class="converting-container">
+      <p-progressspinner strokeWidth="4" />
+      <p>Saving your analysis...</p>
+    </div>
+  }
+
+  @if (result()) {
+    <div class="result-page-header">
+      <h1>Analysis Complete</h1>
+
+      @if (!auth.isAuthenticated()) {
+        <div class="guest-cta">
+          <p>Save this analysis and track your progress by creating a free account.</p>
+          <div class="guest-cta-actions">
+            <p-button
+              label="Create Account"
+              icon="pi pi-user-plus"
+              (onClick)="router.navigate(['/register'])"
+            />
+            <p-button
+              label="Log In"
+              severity="secondary"
+              (onClick)="router.navigate(['/login'])"
+            />
+          </div>
+        </div>
+      }
+    </div>
+
+    <app-analysis-result-panel [result]="result()!" />
+
+    <div class="result-actions">
+      <p-button
+        label="Analyze Another"
+        icon="pi pi-refresh"
+        severity="secondary"
+        (onClick)="analyzeAnother()"
+      />
+    </div>
+  }
+</div>

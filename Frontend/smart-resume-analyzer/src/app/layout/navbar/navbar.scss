@@ -45,3 +45,14 @@
     font-weight: 500;
   }
 }
+
+.navbar-link {
+  color: #0D9488;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  &:hover {
+    color: #0F766E;
+  }
+}

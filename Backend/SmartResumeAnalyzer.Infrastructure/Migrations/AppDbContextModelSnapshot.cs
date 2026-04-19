@@ -65,6 +65,61 @@ namespace SmartResumeAnalyzer.Infrastructure.Migrations
                     b.ToTable("Analyses");
                 });
 
+            modelBuilder.Entity("SmartResumeAnalyzer.Core.Entities.AnalysisLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsConverted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("JobDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResultJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SeniorityLevel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IpAddress", "CreatedAt");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("AnalysisLogs");
+                });
+
             modelBuilder.Entity("SmartResumeAnalyzer.Core.Entities.ApiUsage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -267,6 +322,16 @@ namespace SmartResumeAnalyzer.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("CvVersion");
+                });
+
+            modelBuilder.Entity("SmartResumeAnalyzer.Core.Entities.AnalysisLog", b =>
+                {
+                    b.HasOne("SmartResumeAnalyzer.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartResumeAnalyzer.Core.Entities.ApiUsage", b =>

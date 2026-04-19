@@ -38,9 +38,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
             if (await _userRepository.EmailExistsAsync(dto.Email))
-            {
-                throw new ConflictException("User with this email allready exists.");
-            }
+                throw new ConflictException("User with this email already exists.");
 
             var user = new User
             {
@@ -56,7 +54,19 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             return GenerateAuthResponse(user);
         }
 
-        private AuthResponseDto GenerateAuthResponse(User user) 
+        public async Task<UserProfileDto> GetCurrentUserAsync(Guid userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) throw new NotFoundException("User not found.");
+            return new UserProfileDto
+            {
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
+        }
+
+        private AuthResponseDto GenerateAuthResponse(User user)
         {
             var token = GenerateJwtToken(user);
 

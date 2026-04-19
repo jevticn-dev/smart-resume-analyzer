@@ -17,10 +17,19 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
 
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.Configure<RateLimitSettings>(configuration.GetSection("RateLimitSettings"));
+            services.Configure<GroqSettings>(configuration.GetSection("GroqSettings"));
+            services.Configure<FileStorageSettings>(configuration.GetSection("FileStorageSettings"));
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IProjectRepository, ProjectRepository>();
+
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRateLimitService, RateLimitService>();
+            services.AddScoped<IPdfParserService, PdfParserService>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IProjectService, ProjectService>();
+
+            services.AddHttpClient<IAiAnalysisService, AiAnalysisService>();
 
             return services;
         }

@@ -6,5 +6,6 @@ namespace SmartResumeAnalyzer.Core.Interfaces
     {
         Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
         Task<AuthResponseDto> LoginAsync(LoginDto dto);
+        Task<UserProfileDto> GetCurrentUserAsync(Guid userId);
     }
 }
