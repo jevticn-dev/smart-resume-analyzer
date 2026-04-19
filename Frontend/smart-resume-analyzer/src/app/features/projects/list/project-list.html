@@ -1,0 +1,158 @@
+<app-navbar />
+
+<div class="list-container">
+  <div class="list-header">
+    <div class="list-header-text">
+      <h1>Projects</h1>
+      <p>Track your job applications and CV analyses.</p>
+    </div>
+    <p-button
+      label="New Project"
+      icon="pi pi-plus"
+      (onClick)="navigateToCreate()"
+    />
+  </div>
+
+  @if (isLoading()) {
+    <div class="projects-grid">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton-card">
+          <p-skeleton height="1.5rem" width="60%" />
+          <p-skeleton height="1rem" width="40%" styleClass="mt-2" />
+          <p-skeleton height="1rem" width="30%" styleClass="mt-2" />
+        </div>
+      }
+    </div>
+  } @else if (projects().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-folder-open empty-icon"></i>
+      <h2>No projects yet</h2>
+      <p>Create your first project to start tracking your job applications.</p>
+      <p-button
+        label="Create Project"
+        icon="pi pi-plus"
+        (onClick)="navigateToCreate()"
+      />
+    </div>
+  } @else {
+    <div class="projects-grid">
+      @for (project of projects(); track project.id) {
+        <div class="flip-card" (click)="navigateToProject(project.id)">
+          <div class="flip-card-inner">
+
+            <div class="flip-card-front">
+              <div class="card-front-header">
+                <div class="project-title-group">
+                  <h2 class="project-name">{{ project.title }}</h2>
+                  <span class="project-company">{{ project.companyName }}</span>
+                </div>
+                <p-tag
+                  [value]="project.status"
+                  [severity]="getStatusSeverity(project.status)"
+                />
+              </div>
+
+              <div class="card-front-score">
+                @if (project.latestMatchScore !== null) {
+                  <svg class="score-svg" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" stroke-width="7" />
+                    <circle
+                      cx="40" cy="40" r="34"
+                      fill="none"
+                      [attr.stroke]="getScoreColor(project.latestMatchScore!)"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                      [attr.stroke-dasharray]="2 * 3.14159 * 34"
+                      [attr.stroke-dashoffset]="getScoreDashOffset(project.latestMatchScore!)"
+                      class="score-arc"
+                    />
+                  </svg>
+                  <div class="score-inner">
+                    <span class="score-number" [style.color]="getScoreColor(project.latestMatchScore!)">
+                      {{ project.latestMatchScore }}
+                    </span>
+                    <span class="score-label">Match</span>
+                  </div>
+                } @else {
+                  <div class="no-score">
+                    <i class="pi pi-chart-bar"></i>
+                    <span>No analysis</span>
+                  </div>
+                }
+              </div>
+
+              <div class="card-front-footer">
+                <span class="project-date">{{ project.createdAt | date: 'MMM d, y' }}</span>
+                @if (project.latestMatchScore !== null) {
+                  <span class="flip-hint">
+                    <i class="pi pi-sync"></i> Details
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="flip-card-back">
+              <div class="back-header">
+                <span class="back-title">Analysis Summary</span>
+              </div>
+
+              @if (project.latestMatchScore !== null) {
+                <div class="back-stats">
+                  <div class="stat-boxes">
+                    <div class="stat-box stat-strengths">
+                      <i class="pi pi-check-circle stat-icon"></i>
+                      <span class="stat-number">{{ project.strengthsCount ?? 0 }}</span>
+                      <span class="stat-label">Strengths</span>
+                    </div>
+                    <div class="stat-box stat-weaknesses">
+                      <i class="pi pi-times-circle stat-icon"></i>
+                      <span class="stat-number">{{ project.weaknessesCount ?? 0 }}</span>
+                      <span class="stat-label">Weaknesses</span>
+                    </div>
+                  </div>
+
+                  <div class="suggestions-breakdown">
+                    <span class="breakdown-title">Suggestions</span>
+                    <div class="breakdown-rows">
+                      <div class="breakdown-row">
+                        <span class="priority-dot dot-high"></span>
+                        <span class="priority-label">High</span>
+                        <span class="priority-count">{{ project.highSuggestionsCount ?? 0 }}</span>
+                      </div>
+                      <div class="breakdown-row">
+                        <span class="priority-dot dot-medium"></span>
+                        <span class="priority-label">Medium</span>
+                        <span class="priority-count">{{ project.mediumSuggestionsCount ?? 0 }}</span>
+                      </div>
+                      <div class="breakdown-row">
+                        <span class="priority-dot dot-low"></span>
+                        <span class="priority-label">Low</span>
+                        <span class="priority-count">{{ project.lowSuggestionsCount ?? 0 }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="keywords-row">
+                    <i class="pi pi-tag keywords-icon"></i>
+                    <span>{{ project.missingKeywordsCount ?? 0 }} missing keywords</span>
+                  </div>
+                </div>
+              } @else {
+                <div class="back-no-analysis">
+                  <p>No analysis yet.</p>
+                </div>
+              }
+
+              <div class="back-footer">
+                <div class="open-project-fab">
+                  <i class="pi pi-arrow-right"></i>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

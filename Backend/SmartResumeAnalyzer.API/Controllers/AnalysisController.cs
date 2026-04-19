@@ -57,6 +57,7 @@ namespace SmartResumeAnalyzer.API.Controllers
             var result = await _aiAnalysisService.AnalyzeAsync(
                 cvText,
                 request.JobTitle,
+                request.CompanyName,
                 request.JobDescription,
                 request.SeniorityLevel);
 
@@ -70,6 +71,7 @@ namespace SmartResumeAnalyzer.API.Controllers
                 IpAddress = ipAddress,
                 JobTitle = request.JobTitle,
                 JobDescription = request.JobDescription,
+                CompanyName = request.CompanyName,
                 SeniorityLevel = request.SeniorityLevel,
                 OriginalFileName = cvFile.FileName,
                 StoredFileName = storedFileName,
@@ -83,13 +85,9 @@ namespace SmartResumeAnalyzer.API.Controllers
 
             if (userId.HasValue)
             {
-                Guid projectId;
-                using (var stream = cvFile.OpenReadStream())
-                {
-                    projectId = await _projectService.SaveAnalysisAsProjectAsync(
-                        result, request.JobTitle, request.JobDescription, request.SeniorityLevel,
-                        stream, cvFile.FileName, userId.Value);
-                }
+                var projectId = await _projectService.SaveAnalysisAsProjectAsync(
+                    result, request.JobTitle, request.CompanyName, request.JobDescription, request.SeniorityLevel,
+                    storedFileName, cvFile.FileName, userId.Value, request.ProjectId);
 
                 result.ProjectId = projectId;
             }

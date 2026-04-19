@@ -1,5 +1,6 @@
 export interface AnalysisRequest {
   jobTitle: string;
+  companyName: string;
   jobDescription: string;
   seniorityLevel: string;
 }
@@ -16,4 +17,6 @@ export interface AnalysisResult {
   missingKeywords: string[];
   suggestions: SuggestionItem[];
   summary: string;
+  analysisLogId?: string;
+  projectId?: string;
 }

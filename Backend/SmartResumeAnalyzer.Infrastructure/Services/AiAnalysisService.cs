@@ -20,9 +20,9 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             _settings = settings.Value;
         }
 
-        public async Task<AnalysisResultDto> AnalyzeAsync(string cvText, string jobTitle, string jobDescription, string seniorityLevel)
+        public async Task<AnalysisResultDto> AnalyzeAsync(string cvText, string jobTitle, string companyName, string jobDescription, string seniorityLevel)
         {
-            var prompt = BuildPrompt(cvText, jobTitle, jobDescription, seniorityLevel);
+            var prompt = BuildPrompt(cvText, jobTitle, companyName, jobDescription, seniorityLevel);
 
             var requestBody = new
             {
@@ -59,7 +59,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             return ParseResponse(responseJson);
         }
 
-        private static string BuildPrompt(string cvText, string jobTitle, string jobDescription, string seniorityLevel)
+        private static string BuildPrompt(string cvText, string jobTitle, string companyName, string jobDescription, string seniorityLevel)
         {
             var jsonStructure = """
                 {
@@ -77,10 +77,14 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 }
             """;
 
+            var companyLine = string.IsNullOrWhiteSpace(companyName)
+                ? string.Empty
+                : $"\nCompany: {companyName}";
+
             return $"""
                         You are an expert CV analyzer. Analyze the following CV against the job requirements and return ONLY a valid JSON object with no additional text, markdown, or explanation.
 
-                        Job Title: {jobTitle}
+                        Job Title: {jobTitle}{companyLine}
                         Seniority Level: {seniorityLevel}
                         Job Description: {jobDescription}
 

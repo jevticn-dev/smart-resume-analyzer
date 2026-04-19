@@ -1,61 +1,45 @@
 <app-navbar />
 
 <div class="result-container">
+  @if (isConverting()) {
+    <div class="converting-container">
+      <p-progressspinner strokeWidth="4" />
+      <p>Saving your analysis...</p>
+    </div>
+  }
+
   @if (result()) {
-    <div class="result-header">
-      <div class="score-circle">
-        <span class="score-number">{{ result()!.matchScore }}</span>
-        <span class="score-label">Match Score</span>
-      </div>
-      <div class="summary">
-        <h1>Analysis Complete</h1>
-        <p>{{ result()!.summary }}</p>
-      </div>
+    <div class="result-page-header">
+      <h1>Analysis Complete</h1>
+
+      @if (!auth.isAuthenticated()) {
+        <div class="guest-cta">
+          <p>Save this analysis and track your progress by creating a free account.</p>
+          <div class="guest-cta-actions">
+            <p-button
+              label="Create Account"
+              icon="pi pi-user-plus"
+              (onClick)="router.navigate(['/register'])"
+            />
+            <p-button
+              label="Log In"
+              severity="secondary"
+              (onClick)="router.navigate(['/login'])"
+            />
+          </div>
+        </div>
+      }
     </div>
 
-    <div class="result-grid">
-      <div class="result-section">
-        <h2>Strengths</h2>
-        <ul>
-          @for (item of result()!.strengths; track item) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </div>
-
-      <div class="result-section">
-        <h2>Weaknesses</h2>
-        <ul>
-          @for (item of result()!.weaknesses; track item) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </div>
-
-      <div class="result-section">
-        <h2>Missing Keywords</h2>
-        <div class="keywords">
-          @for (keyword of result()!.missingKeywords; track keyword) {
-            <p-tag [value]="keyword" severity="warn" />
-          }
-        </div>
-      </div>
-
-      <div class="result-section">
-        <h2>Suggestions</h2>
-        <div class="suggestions">
-          @for (suggestion of result()!.suggestions; track suggestion.text) {
-            <div class="suggestion-item">
-              <p-tag [value]="suggestion.priority" [severity]="getSeverity(suggestion.priority)" />
-              <span>{{ suggestion.text }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
+    <app-analysis-result-panel [result]="result()!" />
 
     <div class="result-actions">
-      <p-button label="Analyze Another" icon="pi pi-refresh" (onClick)="analyzeAnother()" />
+      <p-button
+        label="Analyze Another"
+        icon="pi pi-refresh"
+        severity="secondary"
+        (onClick)="analyzeAnother()"
+      />
     </div>
   }
 </div>

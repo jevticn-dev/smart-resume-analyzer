@@ -7,6 +7,7 @@
 
     <div class="navbar-actions">
       @if (auth.isAuthenticated()) {
+        <a routerLink="/projects" class="navbar-link">Projects</a>
         <span class="navbar-user">{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</span>
         <p-button
           label="Logout"

@@ -20,68 +20,75 @@
 
   <div class="step-content">
 
-      <div class="step-panel" [hidden]="currentStep() !== 1">
-        <h2>Job Details</h2>
-        <p class="step-description">Enter information about the position you are applying for.</p>
+    <div class="step-panel" [hidden]="currentStep() !== 1">
+      <h2>Job Details</h2>
+      <p class="step-description">Enter information about the position you are applying for.</p>
 
-        <div class="form-field">
-            <p-floatlabel variant="on">
-                <input pInputText id="jobTitle" [(ngModel)]="formData.jobTitle"
-                [class.ng-invalid]="step1Touched() && !formData.jobTitle.trim()"
-                />
-                <label for="jobTitle">Job Title</label>
-            </p-floatlabel>
-            @if (step1Touched() && !formData.jobTitle.trim()) {
-                <span class="field-error">Job title is required.</span>
-            }
-        </div>
-
-        <div class="form-field">
-            <p-floatlabel variant="on">
-                <p-select
-                id="seniorityLevel"
-                [(ngModel)]="formData.seniorityLevel"
-                [options]="seniorityOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder=" "
-                [class.ng-invalid]="step1Touched() && !formData.seniorityLevel"
-                />
-                <label for="seniorityLevel">Seniority Level</label>
-            </p-floatlabel>
-            @if (step1Touched() && !formData.seniorityLevel) {
-                <span class="field-error">Seniority level is required.</span>
-            }
-        </div>
-
-        <div class="form-field">
-            <p-floatlabel variant="on">
-                <textarea
-                pTextarea
-                id="jobDescription"
-                [(ngModel)]="formData.jobDescription"
-                rows="6"
-                style="resize: none"
-                (input)="onTextareaInput($event)"
-                [class.ng-invalid]="step1Touched() && !formData.jobDescription.trim()"
-                ></textarea>
-                <label for="jobDescription">Job Description</label>
-            </p-floatlabel>
-            @if (step1Touched() && !formData.jobDescription.trim()) {
-                <span class="field-error">Job description is required.</span>
-            }
-        </div>
-
-        <div class="step-actions">
-          <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
-        </div>
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="jobTitle" [(ngModel)]="formData.jobTitle"
+            [class.ng-invalid]="step1Touched() && !formData.jobTitle.trim()"
+          />
+          <label for="jobTitle">Job Title</label>
+        </p-floatlabel>
+        @if (step1Touched() && !formData.jobTitle.trim()) {
+          <span class="field-error">Job title is required.</span>
+        }
       </div>
 
-    <div class="step-panel" [hidden]="currentStep() !== 2">
-        <h2>Upload CV</h2>
-        <p class="step-description">Upload your CV in PDF format.</p>
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <input pInputText id="companyName" [(ngModel)]="formData.companyName" />
+          <label for="companyName">Company Name (optional)</label>
+        </p-floatlabel>
+      </div>
 
-        <div
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <p-select
+            id="seniorityLevel"
+            [(ngModel)]="formData.seniorityLevel"
+            [options]="seniorityOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder=" "
+            [class.ng-invalid]="step1Touched() && !formData.seniorityLevel"
+          />
+          <label for="seniorityLevel">Seniority Level</label>
+        </p-floatlabel>
+        @if (step1Touched() && !formData.seniorityLevel) {
+          <span class="field-error">Seniority level is required.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <p-floatlabel variant="on">
+          <textarea
+            pTextarea
+            id="jobDescription"
+            [(ngModel)]="formData.jobDescription"
+            rows="6"
+            style="resize: none"
+            (input)="onTextareaInput($event)"
+            [class.ng-invalid]="step1Touched() && !formData.jobDescription.trim()"
+          ></textarea>
+          <label for="jobDescription">Job Description</label>
+        </p-floatlabel>
+        @if (step1Touched() && !formData.jobDescription.trim()) {
+          <span class="field-error">Job description is required.</span>
+        }
+      </div>
+
+      <div class="step-actions">
+        <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
+      </div>
+    </div>
+
+    <div class="step-panel" [hidden]="currentStep() !== 2">
+      <h2>Upload CV</h2>
+      <p class="step-description">Upload your CV in PDF format.</p>
+
+      <div
         class="drop-zone"
         [class.has-file]="selectedFile()"
         [class.drag-over]="isDragOver()"
@@ -89,87 +96,117 @@
         (dragleave)="onDragLeave()"
         (drop)="onDrop($event)"
         (click)="fileInput.click()"
-        >
+      >
         <input
-            #fileInput
-            type="file"
-            accept=".pdf"
-            style="display: none"
-            (change)="onFileChange($event)"
+          #fileInput
+          type="file"
+          accept=".pdf"
+          style="display: none"
+          (change)="onFileChange($event)"
         />
 
         @if (!selectedFile()) {
-            <div class="drop-zone-empty">
+          <div class="drop-zone-empty">
             <div class="drop-icon">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <rect width="48" height="48" rx="12" fill="#F0FDFA"/>
                 <path d="M14 36h20M24 12v18M17 19l7-7 7 7" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M16 28h4v4h-4zM28 28h4v4h-4z" fill="#0D9488" fill-opacity="0.15"/>
                 <rect x="13" y="16" width="22" height="18" rx="2" stroke="#0D9488" stroke-width="2" stroke-dasharray="4 2"/>
-                </svg>
+              </svg>
             </div>
             <p class="drop-text">Drag and drop your CV here</p>
             <p class="drop-subtext">or click to browse</p>
             <span class="drop-hint">PDF only, max 5MB</span>
-            </div>
+          </div>
         } @else {
-            <div class="drop-zone-filled">
+          <div class="drop-zone-filled">
             <div class="file-icon">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <rect width="48" height="48" rx="12" fill="#F0FDFA"/>
                 <path d="M16 12h10l8 8v16a2 2 0 01-2 2H16a2 2 0 01-2-2V14a2 2 0 012-2z" fill="#0D9488" fill-opacity="0.15" stroke="#0D9488" stroke-width="2"/>
                 <path d="M26 12v8h8" stroke="#0D9488" stroke-width="2" stroke-linecap="round"/>
                 <path d="M20 28h8M20 24h8M20 32h4" stroke="#0D9488" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+              </svg>
             </div>
             <p class="file-name">{{ selectedFile()!.name }}</p>
             <p class="file-size">{{ getFileSize() }}</p>
             <button class="remove-file" (click)="removeFile($event)">Remove</button>
-            </div>
+          </div>
         }
-        </div>
+      </div>
 
-        <div class="step-actions">
+      <div class="step-actions">
         <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" (onClick)="prevStep()" />
         <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextStep()" />
-        </div>
+      </div>
     </div>
 
-      <div class="step-panel" [hidden]="currentStep() !== 3">
-        <h2>Confirm Analysis</h2>
-        <p class="step-description">Review your information before submitting.</p>
+    <div class="step-panel" [hidden]="currentStep() !== 3">
+      <h2>Confirm Analysis</h2>
+      <p class="step-description">Review your information before submitting.</p>
 
-        <div class="summary-card">
-          <div class="summary-item">
-            <span class="summary-label">Job Title</span>
-            <span class="summary-value">{{ formData.jobTitle }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Seniority Level</span>
-            <span class="summary-value">{{ formData.seniorityLevel }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">CV File</span>
-            <span class="summary-value">{{ selectedFile()?.name }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Job Description</span>
-            <span class="summary-value description-preview">{{ formData.jobDescription }}</span>
-          </div>
+      <div class="summary-card">
+        <div class="summary-item">
+          <span class="summary-label">Job Title</span>
+          <span class="summary-value">{{ formData.jobTitle }}</span>
         </div>
-
-        @if (isLoading()) {
-          <div class="loading-container">
-            <p-progressspinner strokeWidth="4" />
-            <p>Analyzing your CV, please wait...</p>
+        @if (formData.companyName) {
+          <div class="summary-item">
+            <span class="summary-label">Company</span>
+            <span class="summary-value">{{ formData.companyName }}</span>
           </div>
         }
-
-        <div class="step-actions">
-          <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" (onClick)="prevStep()" [disabled]="isLoading()" />
-          <p-button label="Analyze" icon="pi pi-sparkles" iconPos="right" (onClick)="submit()" [loading]="isLoading()" />
+        <div class="summary-item">
+          <span class="summary-label">Seniority Level</span>
+          <span class="summary-value">{{ formData.seniorityLevel }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">CV File</span>
+          <span class="summary-value">{{ selectedFile()?.name }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Job Description</span>
+          <span class="summary-value description-preview">{{ formData.jobDescription }}</span>
         </div>
       </div>
 
+      @if (isLoading()) {
+        <div class="loading-container">
+          <p-progressspinner strokeWidth="4" />
+          <p>Analyzing your CV, please wait...</p>
+        </div>
+      }
+
+      <div class="step-actions">
+        <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" (onClick)="prevStep()" [disabled]="isLoading()" />
+        <p-button label="Analyze" icon="pi pi-sparkles" iconPos="right" (onClick)="submit()" [loading]="isLoading()" />
+      </div>
+    </div>
+
   </div>
 </div>
+
+<p-dialog
+  [(visible)]="showLimitDialog"
+  [modal]="true"
+  [closable]="true"
+  header="Daily Limit Reached"
+  [style]="{ width: '420px' }"
+>
+  <p>You have reached the daily analysis limit for guest users.</p>
+  <p>Create a free account to get a higher daily limit and save your analyses.</p>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      (onClick)="closeLimitDialog()"
+    />
+    <p-button
+      label="Create Account"
+      icon="pi pi-user-plus"
+      (onClick)="retryAfterAuth()"
+    />
+  </ng-template>
+</p-dialog>

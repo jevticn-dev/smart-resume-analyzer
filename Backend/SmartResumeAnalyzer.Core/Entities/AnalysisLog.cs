@@ -7,6 +7,7 @@
         public string? IpAddress { get; set; }
         public string JobTitle { get; set; } = string.Empty;
         public string JobDescription { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
         public string SeniorityLevel { get; set; } = string.Empty;
         public string OriginalFileName { get; set; } = string.Empty;
         public string StoredFileName { get; set; } = string.Empty;

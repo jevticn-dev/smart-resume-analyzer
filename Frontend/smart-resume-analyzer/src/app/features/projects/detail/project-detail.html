@@ -1,0 +1,65 @@
+<app-navbar />
+
+<div class="detail-container">
+  @if (isLoading()) {
+    <div class="detail-header">
+      <p-skeleton height="2rem" width="40%" />
+      <p-skeleton height="1rem" width="25%" styleClass="mt-2" />
+    </div>
+    <div class="detail-layout">
+      <p-skeleton height="100%" />
+      <p-skeleton height="100%" />
+    </div>
+  } @else if (project()) {
+    <div class="detail-header">
+      <div class="detail-header-left">
+        <p-button
+          icon="pi pi-arrow-left"
+          severity="secondary"
+          [text]="true"
+          (onClick)="goBack()"
+        />
+        <div>
+          <h1>{{ project()!.title }}</h1>
+          <span class="detail-company">{{ project()!.companyName }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-layout">
+      <div class="pdf-panel">
+        @if (pdfUrl()) {
+          <pdf-viewer
+            [src]="pdfUrl()!"
+            [render-text]="true"
+            [original-size]="false"
+            [fit-to-page]="true"
+            class="pdf-viewer"
+          />
+        } @else {
+          <div class="no-pdf">
+            <i class="pi pi-file-pdf no-pdf-icon"></i>
+            <p>No CV uploaded for this project.</p>
+          </div>
+        }
+      </div>
+
+      <div class="analysis-panel">
+        @if (project()!.analysis) {
+          <app-analysis-result-panel [result]="project()!.analysis!" />
+        } @else {
+          <div class="no-analysis">
+            <i class="pi pi-chart-bar no-analysis-icon"></i>
+            <p>No analysis available for this project.</p>
+            <p-button
+              label="Run Analysis"
+              icon="pi pi-sparkles"
+              (onClick)="runAnalysis()"
+              styleClass="mt-3"
+            />
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

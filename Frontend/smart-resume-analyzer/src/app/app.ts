@@ -13,8 +13,14 @@ export class App implements OnInit {
   private auth = inject(Auth);
 
   ngOnInit(): void {
-    if (this.auth.isAuthenticated()) {
-      this.auth.loadCurrentUser().subscribe();
+    const token = this.auth.getToken();
+    if (token) {
+      this.auth.isAuthenticated.set(true);
+      this.auth.loadCurrentUser().subscribe({
+        error: () => {
+          this.auth.logout();
+        }
+      });
     }
   }
 }

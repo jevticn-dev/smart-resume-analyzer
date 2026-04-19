@@ -1,20 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
-import { StepperModule } from 'primeng/stepper';
-import { FileUploadModule } from 'primeng/fileupload';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { CardModule } from 'primeng/card';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { Navbar } from '../../../layout/navbar/navbar';
 import { Analysis } from '../../../core/services/analysis';
 import { Toast } from '../../../core/services/toast';
 import { ErrorHandler } from '../../../core/services/error-handler';
 import { AnalysisRequest, AnalysisResult } from '../../../core/models/analysis.models';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-analyze',
@@ -24,36 +22,36 @@ import { AnalysisRequest, AnalysisResult } from '../../../core/models/analysis.m
     InputTextModule,
     TextareaModule,
     SelectModule,
-    StepperModule,
-    FileUploadModule,
     ProgressSpinnerModule,
-    CardModule,
     FloatLabelModule,
-    Navbar
+    Navbar,
+    DialogModule
   ],
   templateUrl: './analyze.html',
   styleUrl: './analyze.scss'
 })
-export class Analyze {
+export class Analyze implements OnInit {
   private analysisService = inject(Analysis);
   private toastService = inject(Toast);
   private errorHandler = inject(ErrorHandler);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   currentStep = signal<number>(1);
   isLoading = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
   step1Touched = signal<boolean>(false);
-
-  private textareaHeight = '120px';
+  showLimitDialog = signal<boolean>(false);
 
   formData: AnalysisRequest = {
     jobTitle: '',
+    companyName: '',
     jobDescription: '',
     seniorityLevel: ''
   };
 
   selectedFile = signal<File | null>(null);
+  projectId = signal<string | null>(null);
 
   seniorityOptions = [
     { label: 'Intern', value: 'Intern' },
@@ -63,12 +61,33 @@ export class Analyze {
     { label: 'Lead', value: 'Lead' }
   ];
 
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParams;
+    if (params['jobTitle'] || params['jobDescription'] || params['seniorityLevel']) {
+      this.projectId.set(params['projectId'] ?? null);
+      this.formData = {
+        jobTitle: params['jobTitle'] ?? '',
+        companyName: params['companyName'] ?? '',
+        jobDescription: params['jobDescription'] ?? '',
+        seniorityLevel: params['seniorityLevel'] ?? ''
+      };
+      this.currentStep.set(2);
+      return;
+    }
+
+    const pending = sessionStorage.getItem('pendingAnalysisForm');
+    if (pending) {
+      sessionStorage.removeItem('pendingAnalysisForm');
+      this.formData = JSON.parse(pending);
+      this.currentStep.set(2);
+      this.toastService.info('Your session has been restored. Please re-upload your CV to continue.');
+    }
+  }
+
   nextStep(): void {
     if (this.currentStep() === 1) {
       this.step1Touched.set(true);
-      if (!this.isStep1Valid()) {
-        return;
-      }
+      if (!this.isStep1Valid()) return;
     }
     if (this.currentStep() === 2 && !this.selectedFile()) {
       this.toastService.warn('Please upload your CV before continuing.');
@@ -79,21 +98,6 @@ export class Analyze {
 
   prevStep(): void {
     this.currentStep.update(s => s - 1);
-  }
-
-  onFileSelect(event: any): void {
-    const file = event.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        this.toastService.error('Only PDF files are allowed.');
-        return;
-      }
-      this.selectedFile.set(file);
-    }
-  }
-
-  onFileRemove(): void {
-    this.selectedFile.set(null);
   }
 
   isStep1Valid(): boolean {
@@ -111,9 +115,13 @@ export class Analyze {
 
     const data = new FormData();
     data.append('jobTitle', this.formData.jobTitle);
+    data.append('companyName', this.formData.companyName);
     data.append('jobDescription', this.formData.jobDescription);
     data.append('seniorityLevel', this.formData.seniorityLevel);
     data.append('cvFile', this.selectedFile()!);
+    if (this.projectId()) {
+      data.append('projectId', this.projectId()!);
+    }
 
     this.analysisService.analyze(data).subscribe({
       next: (result: AnalysisResult) => {
@@ -123,9 +131,28 @@ export class Analyze {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorHandler.handle(err);
+        if (err.status === 429) {
+          sessionStorage.setItem('pendingAnalysisForm', JSON.stringify({
+            jobTitle: this.formData.jobTitle,
+            companyName: this.formData.companyName,
+            jobDescription: this.formData.jobDescription,
+            seniorityLevel: this.formData.seniorityLevel
+          }));
+          this.showLimitDialog.set(true);
+        } else {
+          this.errorHandler.handle(err);
+        }
       }
     });
+  }
+
+  retryAfterAuth(): void {
+    this.showLimitDialog.set(false);
+    this.router.navigate(['/register']);
+  }
+
+  closeLimitDialog(): void {
+    this.showLimitDialog.set(false);
   }
 
   onTextareaInput(event: Event): void {

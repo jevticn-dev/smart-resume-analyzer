@@ -15,7 +15,10 @@ export class Auth {
   isAuthenticated = signal<boolean>(false);
 
   constructor(private http: HttpClient, private router: Router) {
-    this.loadUserFromStorage();
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.isAuthenticated.set(true);
+    }
   }
 
   register(request: RegisterRequest): Observable<AuthResponse> {
@@ -55,13 +58,18 @@ export class Auth {
       lastName: response.lastName
     });
     this.isAuthenticated.set(true);
-    this.router.navigate(['/dashboard']);
-  }
 
-  private loadUserFromStorage(): void {
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.isAuthenticated.set(true);
+    const pendingForm = sessionStorage.getItem('pendingAnalysisForm');
+    const pendingLogId = sessionStorage.getItem('pendingAnalysisLogId');
+
+    if (pendingForm) {
+      sessionStorage.removeItem('pendingAnalysisLogId'); // samo ovo briši ovde
+      this.router.navigate(['/analyze']);
+    } else if (pendingLogId) {
+      sessionStorage.removeItem('pendingAnalysisLogId');
+      this.router.navigate(['/analysis/result'], { state: { pendingAnalysisLogId: pendingLogId } });
+    } else {
+      this.router.navigate(['/dashboard']);
     }
   }
 }
