@@ -43,22 +43,38 @@
         </p-floatlabel>
       </div>
 
-      <div class="form-field">
-        <p-floatlabel variant="on">
-          <p-select
-            id="seniorityLevel"
-            [(ngModel)]="formData.seniorityLevel"
-            [options]="seniorityOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder=" "
-            [class.ng-invalid]="step1Touched() && !formData.seniorityLevel"
-          />
-          <label for="seniorityLevel">Seniority Level</label>
-        </p-floatlabel>
-        @if (step1Touched() && !formData.seniorityLevel) {
-          <span class="field-error">Seniority level is required.</span>
-        }
+      <div class="form-row">
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <p-select
+              id="seniorityLevel"
+              [(ngModel)]="formData.seniorityLevel"
+              [options]="seniorityOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder=" "
+              [class.ng-invalid]="step1Touched() && !formData.seniorityLevel"
+            />
+            <label for="seniorityLevel">Seniority Level</label>
+          </p-floatlabel>
+          @if (step1Touched() && !formData.seniorityLevel) {
+            <span class="field-error">Seniority level is required.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <p-select
+              id="industry"
+              [(ngModel)]="formData.industry"
+              [options]="industryOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder=" "
+            />
+            <label for="industry">Industry (optional)</label>
+          </p-floatlabel>
+        </div>
       </div>
 
       <div class="form-field">
@@ -111,7 +127,6 @@
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <rect width="48" height="48" rx="12" fill="#F0FDFA"/>
                 <path d="M14 36h20M24 12v18M17 19l7-7 7 7" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M16 28h4v4h-4zM28 28h4v4h-4z" fill="#0D9488" fill-opacity="0.15"/>
                 <rect x="13" y="16" width="22" height="18" rx="2" stroke="#0D9488" stroke-width="2" stroke-dasharray="4 2"/>
               </svg>
             </div>
@@ -147,23 +162,31 @@
       <p class="step-description">Review your information before submitting.</p>
 
       <div class="summary-card">
-        <div class="summary-item">
-          <span class="summary-label">Job Title</span>
-          <span class="summary-value">{{ formData.jobTitle }}</span>
-        </div>
-        @if (formData.companyName) {
+        <div class="summary-row">
           <div class="summary-item">
-            <span class="summary-label">Company</span>
-            <span class="summary-value">{{ formData.companyName }}</span>
+            <span class="summary-label">Job Title</span>
+            <span class="summary-value">{{ formData.jobTitle }}</span>
           </div>
-        }
-        <div class="summary-item">
-          <span class="summary-label">Seniority Level</span>
-          <span class="summary-value">{{ formData.seniorityLevel }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">CV File</span>
-          <span class="summary-value">{{ selectedFile()?.name }}</span>
+          @if (formData.companyName) {
+            <div class="summary-item">
+              <span class="summary-label">Company</span>
+              <span class="summary-value">{{ formData.companyName }}</span>
+            </div>
+          }
+          <div class="summary-item">
+            <span class="summary-label">Seniority Level</span>
+            <span class="summary-value">{{ formData.seniorityLevel }}</span>
+          </div>
+          @if (formData.industry) {
+            <div class="summary-item">
+              <span class="summary-label">Industry</span>
+              <span class="summary-value">{{ formData.industry }}</span>
+            </div>
+          }
+          <div class="summary-item">
+            <span class="summary-label">CV File</span>
+            <span class="summary-value">{{ selectedFile()?.name }}</span>
+          </div>
         </div>
         <div class="summary-item">
           <span class="summary-label">Job Description</span>
@@ -198,15 +221,7 @@
   <p>Create a free account to get a higher daily limit and save your analyses.</p>
 
   <ng-template pTemplate="footer">
-    <p-button
-      label="Cancel"
-      severity="secondary"
-      (onClick)="closeLimitDialog()"
-    />
-    <p-button
-      label="Create Account"
-      icon="pi pi-user-plus"
-      (onClick)="retryAfterAuth()"
-    />
+    <p-button label="Cancel" severity="secondary" (onClick)="closeLimitDialog()" />
+    <p-button label="Create Account" icon="pi pi-user-plus" (onClick)="retryAfterAuth()" />
   </ng-template>
 </p-dialog>

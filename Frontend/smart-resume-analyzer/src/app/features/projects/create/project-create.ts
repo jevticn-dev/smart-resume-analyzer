@@ -11,6 +11,7 @@ import { Project } from '../../../core/services/project';
 import { Toast } from '../../../core/services/toast';
 import { ErrorHandler } from '../../../core/services/error-handler';
 import { CreateProject } from '../../../core/models/project.models';
+import { INDUSTRY_OPTIONS, SENIORITY_OPTIONS } from '../../../core/constants/project.constants';
 
 @Component({
   selector: 'app-project-create',
@@ -39,17 +40,13 @@ export class ProjectCreate {
     title: '',
     jobTitle: '',
     companyName: '',
+    industry: '',
     jobDescription: '',
     seniorityLevel: ''
   };
 
-  seniorityOptions = [
-    { label: 'Intern', value: 'Intern' },
-    { label: 'Junior', value: 'Junior' },
-    { label: 'Mid-level', value: 'Mid-level' },
-    { label: 'Senior', value: 'Senior' },
-    { label: 'Lead', value: 'Lead' }
-  ];
+  seniorityOptions = SENIORITY_OPTIONS
+  industryOptions = INDUSTRY_OPTIONS
 
   isValid(): boolean {
     return !!(

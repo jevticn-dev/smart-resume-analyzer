@@ -3,6 +3,7 @@ export interface AnalysisRequest {
   companyName: string;
   jobDescription: string;
   seniorityLevel: string;
+  industry?: string
 }
 
 export interface SuggestionItem {

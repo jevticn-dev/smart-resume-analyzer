@@ -2,64 +2,318 @@
 
 <div class="detail-container">
   @if (isLoading()) {
-    <div class="detail-header">
+    <div class="detail-skeleton">
       <p-skeleton height="2rem" width="40%" />
       <p-skeleton height="1rem" width="25%" styleClass="mt-2" />
-    </div>
-    <div class="detail-layout">
-      <p-skeleton height="100%" />
-      <p-skeleton height="100%" />
+      <p-skeleton height="1rem" width="30%" styleClass="mt-3" />
     </div>
   } @else if (project()) {
+
     <div class="detail-header">
-      <div class="detail-header-left">
-        <p-button
-          icon="pi pi-arrow-left"
-          severity="secondary"
-          [text]="true"
-          (onClick)="goBack()"
-        />
-        <div>
-          <h1>{{ project()!.title }}</h1>
-          <span class="detail-company">{{ project()!.companyName }}</span>
+      <div class="header-top">
+        <button class="back-btn" (click)="goBack()">
+          <i class="pi pi-arrow-left"></i> Projects
+        </button>
+        <div class="header-actions">
+          <p-button
+            label="Edit"
+            icon="pi pi-pencil"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            (onClick)="editProject()"
+          />
+          <p-button
+            label="Add CV Version"
+            icon="pi pi-upload"
+            size="small"
+            (onClick)="openUploadModal()"
+          />
+          @if (canCompare()) {
+            <p-button
+              [label]="compareMode() ? 'Cancel Compare' : 'Compare'"
+              icon="pi pi-arrows-h"
+              [severity]="compareMode() ? 'danger' : 'secondary'"
+              [outlined]="true"
+              size="small"
+              (onClick)="toggleCompareMode()"
+            />
+          }
         </div>
       </div>
+
+      <div class="header-info">
+        <h1>{{ project()!.title }}</h1>
+        @if (project()!.companyName) {
+          <span class="header-company">{{ project()!.companyName }}</span>
+        }
+        <div class="header-badges">
+          <span class="badge" [ngClass]="'badge-status-' + project()!.status.toLowerCase()">{{ project()!.status }}</span>
+          @if (project()!.industry) {
+            <span class="badge" [ngClass]="'badge-industry-' + getIndustryKey(project()!.industry)">{{ project()!.industry }}</span>
+          }
+          <span class="badge" [ngClass]="'badge-seniority-' + project()!.seniority.toLowerCase()">{{ project()!.seniority }}</span>
+        </div>
+        @if (project()!.jobDescription) {
+          <p class="header-description" [class.expanded]="descriptionExpanded()">{{ project()!.jobDescription }}</p>
+          <button class="read-more-btn" (click)="toggleDescription()">
+            {{ descriptionExpanded() ? 'Show less' : 'Read more' }}
+            <i class="pi" [class.pi-chevron-down]="!descriptionExpanded()" [class.pi-chevron-up]="descriptionExpanded()"></i>
+          </button>
+        }
+      </div>
     </div>
 
-    <div class="detail-layout">
-      <div class="pdf-panel">
-        @if (pdfUrl()) {
-          <pdf-viewer
-            [src]="pdfUrl()!"
-            [render-text]="true"
-            [original-size]="false"
-            [fit-to-page]="true"
-            class="pdf-viewer"
+    @if (versionsWithAnalysis().length > 0) {
+      <div class="score-timeline">
+        <span class="timeline-title">Score Timeline</span>
+        <div class="timeline-track">
+          @for (version of versionsWithAnalysis(); track version.id; let last = $last) {
+            <div class="timeline-item">
+              <div class="timeline-point" [style.background]="getScoreColor(version.analysis!.matchScore)">
+                <svg viewBox="0 0 48 48" class="timeline-svg">
+                  <circle cx="24" cy="24" r="19" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" />
+                  <circle
+                    cx="24" cy="24" r="19"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    [attr.stroke-dasharray]="2 * 3.14159 * 19"
+                    [attr.stroke-dashoffset]="getScoreDashOffset(version.analysis!.matchScore, 19)"
+                    class="timeline-arc"
+                  />
+                </svg>
+                <span class="timeline-score">{{ version.analysis!.matchScore }}</span>
+              </div>
+              <span class="timeline-label">V{{ version.versionNumber }}</span>
+              <span class="timeline-date">{{ version.createdAt | date: 'MMM d' }}</span>
+            </div>
+            @if (!last) {
+              <div class="timeline-connector"></div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    @if (project()!.cvVersions.length === 0) {
+      <div class="empty-versions">
+        <i class="pi pi-file empty-icon"></i>
+        <h2>No CV versions yet</h2>
+        <p>Upload your first CV to start tracking and analyzing your applications.</p>
+        <p-button
+          label="Upload your first CV"
+          icon="pi pi-upload"
+          (onClick)="openUploadModal()"
+        />
+      </div>
+    } @else {
+      @if (compareMode()) {
+        <div class="compare-bar">
+          <span>Select 2 versions to compare</span>
+          <span class="compare-count">{{ selectedVersionIds().length }}/2 selected</span>
+          <p-button
+            label="Compare Selected"
+            icon="pi pi-arrows-h"
+            size="small"
+            [disabled]="selectedVersionIds().length !== 2"
+            (onClick)="confirmCompare()"
           />
-        } @else {
-          <div class="no-pdf">
-            <i class="pi pi-file-pdf no-pdf-icon"></i>
-            <p>No CV uploaded for this project.</p>
-          </div>
-        }
-      </div>
+        </div>
+      }
 
-      <div class="analysis-panel">
-        @if (project()!.analysis) {
-          <app-analysis-result-panel [result]="project()!.analysis!" />
-        } @else {
-          <div class="no-analysis">
-            <i class="pi pi-chart-bar no-analysis-icon"></i>
-            <p>No analysis available for this project.</p>
-            <p-button
-              label="Run Analysis"
-              icon="pi pi-sparkles"
-              (onClick)="runAnalysis()"
-              styleClass="mt-3"
-            />
+      <div class="versions-grid">
+        @for (version of project()!.cvVersions; track version.id) {
+          <div
+            class="flip-card"
+            [class.compare-mode]="compareMode()"
+            [class.selected]="isVersionSelected(version.id)"
+            (click)="compareMode() ? toggleVersionSelection(version.id) : navigateToVersion(version.id)"
+          >
+            @if (compareMode()) {
+              <div class="compare-checkbox">
+                <i class="pi" [class.pi-check-circle]="isVersionSelected(version.id)" [class.pi-circle]="!isVersionSelected(version.id)"></i>
+              </div>
+            }
+
+            <div class="flip-card-inner">
+
+              <div class="flip-card-front">
+                <div class="card-front-header">
+                  <div class="project-title-group">
+                    <h2 class="project-name">V{{ version.versionNumber }}</h2>
+                    @if (version.notes) {
+                      <span class="project-company">{{ version.notes }}</span>
+                    }
+                  </div>
+                  <p-tag
+                    [value]="'V' + version.versionNumber"
+                    severity="secondary"
+                  />
+                </div>
+
+                <div class="card-front-score">
+                  @if (version.analysis) {
+                    <svg class="score-svg" viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" stroke-width="7" />
+                      <circle
+                        cx="40" cy="40" r="34"
+                        fill="none"
+                        [attr.stroke]="getScoreColor(version.analysis.matchScore)"
+                        stroke-width="7"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="2 * 3.14159 * 34"
+                        [attr.stroke-dashoffset]="getScoreDashOffset(version.analysis.matchScore, 34)"
+                        class="score-arc"
+                      />
+                    </svg>
+                    <div class="score-inner">
+                      <span class="score-number" [style.color]="getScoreColor(version.analysis.matchScore)">
+                        {{ version.analysis.matchScore }}
+                      </span>
+                      <span class="score-label">Match</span>
+                    </div>
+                  } @else {
+                    <div class="no-score">
+                      <i class="pi pi-chart-bar"></i>
+                      <span>No analysis</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="card-front-footer">
+                  <span class="project-date">{{ version.createdAt | date: 'MMM d, y' }}</span>
+                  @if (version.analysis) {
+                    <span class="flip-hint">
+                      <i class="pi pi-sync"></i> Details
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="flip-card-back">
+                <div class="back-header">
+                  <span class="back-title">Analysis Summary</span>
+                </div>
+
+                @if (version.analysis) {
+                  <div class="back-stats">
+                    <div class="stat-boxes">
+                      <div class="stat-box stat-strengths">
+                        <i class="pi pi-check-circle stat-icon"></i>
+                        <span class="stat-number">{{ version.analysis.strengths.length }}</span>
+                        <span class="stat-label">Strengths</span>
+                      </div>
+                      <div class="stat-box stat-weaknesses">
+                        <i class="pi pi-times-circle stat-icon"></i>
+                        <span class="stat-number">{{ version.analysis.weaknesses.length }}</span>
+                        <span class="stat-label">Weaknesses</span>
+                      </div>
+                    </div>
+
+                    <div class="suggestions-breakdown">
+                      <span class="breakdown-title">Suggestions</span>
+                      <div class="breakdown-rows">
+                        <div class="breakdown-row">
+                          <span class="priority-dot dot-high"></span>
+                          <span class="priority-label">High</span>
+                          <span class="priority-count">{{ getHighSuggestions(version) }}</span>
+                        </div>
+                        <div class="breakdown-row">
+                          <span class="priority-dot dot-medium"></span>
+                          <span class="priority-label">Medium</span>
+                          <span class="priority-count">{{ getMediumSuggestions(version) }}</span>
+                        </div>
+                        <div class="breakdown-row">
+                          <span class="priority-dot dot-low"></span>
+                          <span class="priority-label">Low</span>
+                          <span class="priority-count">{{ getLowSuggestions(version) }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="keywords-row">
+                      <i class="pi pi-tag keywords-icon"></i>
+                      <span>{{ version.analysis.missingKeywords.length }} missing keywords</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="back-no-analysis">
+                    <p>No analysis yet.</p>
+                  </div>
+                }
+
+                <div class="back-footer">
+                  <div class="open-project-fab">
+                    <i class="pi pi-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         }
       </div>
-    </div>
+    }
   }
 </div>
+
+<p-dialog
+  header="Add CV Version"
+  [(visible)]="uploadModalOpen"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="upload-dialog"
+>
+  <div class="upload-modal-body">
+    <div class="field">
+      <label for="notes">Notes (optional)</label>
+      <textarea
+        pTextarea
+        id="notes"
+        [rows]="2"
+        placeholder="e.g. Tailored for senior roles, added new projects..."
+        [(ngModel)]="uploadNotes"
+        class="notes-input"
+      ></textarea>
+    </div>
+
+    <div
+      class="drop-zone"
+      [class.dragging]="isDragging()"
+      [class.has-file]="selectedFile()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onFileDrop($event)"
+    >
+      @if (selectedFile()) {
+        <i class="pi pi-file-pdf drop-icon"></i>
+        <span class="drop-filename">{{ selectedFile()!.name }}</span>
+        <span class="drop-change">Click to change</span>
+      } @else {
+        <i class="pi pi-upload drop-icon"></i>
+        <span class="drop-label">Drag & drop your CV here</span>
+        <span class="drop-sub">or click to browse</span>
+      }
+      <input type="file" accept=".pdf" class="drop-input" (change)="onFileSelect($event)" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="closeUploadModal()"
+    />
+    <p-button
+      label="Upload & Analyze"
+      icon="pi pi-sparkles"
+      [loading]="isUploading()"
+      [disabled]="!selectedFile()"
+      (onClick)="submitUpload()"
+    />
+  </ng-template>
+</p-dialog>

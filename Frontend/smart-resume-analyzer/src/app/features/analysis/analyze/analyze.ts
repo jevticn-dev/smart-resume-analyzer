@@ -13,6 +13,7 @@ import { Toast } from '../../../core/services/toast';
 import { ErrorHandler } from '../../../core/services/error-handler';
 import { AnalysisRequest, AnalysisResult } from '../../../core/models/analysis.models';
 import { DialogModule } from 'primeng/dialog';
+import { INDUSTRY_OPTIONS, SENIORITY_OPTIONS } from '../../../core/constants/project.constants';
 
 @Component({
   selector: 'app-analyze',
@@ -41,25 +42,21 @@ export class Analyze implements OnInit {
   isLoading = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
   step1Touched = signal<boolean>(false);
-  showLimitDialog = signal<boolean>(false);
+  showLimitDialog = false;
 
   formData: AnalysisRequest = {
     jobTitle: '',
     companyName: '',
     jobDescription: '',
-    seniorityLevel: ''
+    seniorityLevel: '',
+    industry: ''
   };
 
   selectedFile = signal<File | null>(null);
   projectId = signal<string | null>(null);
 
-  seniorityOptions = [
-    { label: 'Intern', value: 'Intern' },
-    { label: 'Junior', value: 'Junior' },
-    { label: 'Mid-level', value: 'Mid-level' },
-    { label: 'Senior', value: 'Senior' },
-    { label: 'Lead', value: 'Lead' }
-  ];
+  readonly seniorityOptions = SENIORITY_OPTIONS;
+  readonly industryOptions = INDUSTRY_OPTIONS;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParams;
@@ -69,7 +66,8 @@ export class Analyze implements OnInit {
         jobTitle: params['jobTitle'] ?? '',
         companyName: params['companyName'] ?? '',
         jobDescription: params['jobDescription'] ?? '',
-        seniorityLevel: params['seniorityLevel'] ?? ''
+        seniorityLevel: params['seniorityLevel'] ?? '',
+        industry: params['industry'] ?? ''
       };
       this.currentStep.set(2);
       return;
@@ -118,6 +116,7 @@ export class Analyze implements OnInit {
     data.append('companyName', this.formData.companyName);
     data.append('jobDescription', this.formData.jobDescription);
     data.append('seniorityLevel', this.formData.seniorityLevel);
+    data.append('industry', this.formData.industry ?? '');
     data.append('cvFile', this.selectedFile()!);
     if (this.projectId()) {
       data.append('projectId', this.projectId()!);
@@ -132,13 +131,8 @@ export class Analyze implements OnInit {
       error: (err) => {
         this.isLoading.set(false);
         if (err.status === 429) {
-          sessionStorage.setItem('pendingAnalysisForm', JSON.stringify({
-            jobTitle: this.formData.jobTitle,
-            companyName: this.formData.companyName,
-            jobDescription: this.formData.jobDescription,
-            seniorityLevel: this.formData.seniorityLevel
-          }));
-          this.showLimitDialog.set(true);
+          sessionStorage.setItem('pendingAnalysisForm', JSON.stringify(this.formData));
+          this.showLimitDialog = true;
         } else {
           this.errorHandler.handle(err);
         }
@@ -147,12 +141,12 @@ export class Analyze implements OnInit {
   }
 
   retryAfterAuth(): void {
-    this.showLimitDialog.set(false);
+    this.showLimitDialog = false;
     this.router.navigate(['/register']);
   }
 
   closeLimitDialog(): void {
-    this.showLimitDialog.set(false);
+    this.showLimitDialog = false;
   }
 
   onTextareaInput(event: Event): void {

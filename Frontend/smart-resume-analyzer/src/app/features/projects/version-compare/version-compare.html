@@ -1,0 +1,149 @@
+<app-navbar />
+
+<div class="compare-container">
+  @if (isLoading()) {
+    <div class="compare-skeleton">
+      <p-skeleton height="2rem" width="30%" />
+      <div class="compare-grid">
+        <p-skeleton height="400px" />
+        <p-skeleton height="400px" />
+      </div>
+    </div>
+  } @else if (compare()) {
+    <div class="compare-header">
+      <button class="back-btn" (click)="goBack()">
+        <i class="pi pi-arrow-left"></i> Back to Project
+      </button>
+      <h1>Version Comparison</h1>
+
+      @if (compare()!.versionA.analysis && compare()!.versionB.analysis) {
+        <div class="score-diff" [class.positive]="getScoreDiff() > 0" [class.negative]="getScoreDiff() < 0">
+          @if (getScoreDiff() > 0) {
+            <i class="pi pi-arrow-up"></i>
+            <span>+{{ getScoreDiff() }} points from V{{ compare()!.versionA.versionNumber }} to V{{ compare()!.versionB.versionNumber }}</span>
+          } @else if (getScoreDiff() < 0) {
+            <i class="pi pi-arrow-down"></i>
+            <span>{{ getScoreDiff() }} points from V{{ compare()!.versionA.versionNumber }} to V{{ compare()!.versionB.versionNumber }}</span>
+          } @else {
+            <i class="pi pi-minus"></i>
+            <span>No score change</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="compare-grid">
+      @for (side of [compare()!.versionA, compare()!.versionB]; track side.id; let i = $index) {
+        <div class="compare-panel">
+          <div class="panel-header">
+            <span class="panel-version">V{{ side.versionNumber }}</span>
+            @if (side.notes) {
+              <span class="panel-notes">{{ side.notes }}</span>
+            }
+            <span class="panel-date">{{ side.createdAt | date: 'MMM d, y' }}</span>
+          </div>
+
+          @if (side.analysis) {
+            <div class="panel-score" [style.color]="getScoreColor(side.analysis.matchScore)">
+              <span class="score-number">{{ side.analysis.matchScore }}</span>
+              <span class="score-label">Match Score</span>
+              @if (i === 1 && compare()!.versionA.analysis) {
+                @if (isImproved(side.analysis.matchScore, compare()!.versionA.analysis!.matchScore)) {
+                  <span class="diff-badge diff-up">+{{ side.analysis.matchScore - compare()!.versionA.analysis!.matchScore }}</span>
+                } @else if (isWorse(side.analysis.matchScore, compare()!.versionA.analysis!.matchScore)) {
+                  <span class="diff-badge diff-down">{{ side.analysis.matchScore - compare()!.versionA.analysis!.matchScore }}</span>
+                }
+              }
+            </div>
+
+            <div class="panel-summary">
+              <p>{{ side.analysis.summary }}</p>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-header">
+                <i class="pi pi-check-circle" style="color: #10B981"></i>
+                <span>Strengths</span>
+                <span class="section-count">{{ side.analysis.strengths.length }}</span>
+                @if (i === 1 && compare()!.versionA.analysis) {
+                  @if (isImproved(side.analysis.strengths.length, compare()!.versionA.analysis!.strengths.length)) {
+                    <span class="diff-badge diff-up">+{{ side.analysis.strengths.length - compare()!.versionA.analysis!.strengths.length }}</span>
+                  } @else if (isWorse(side.analysis.strengths.length, compare()!.versionA.analysis!.strengths.length)) {
+                    <span class="diff-badge diff-down">{{ side.analysis.strengths.length - compare()!.versionA.analysis!.strengths.length }}</span>
+                  }
+                }
+              </div>
+              <ul class="compare-list">
+                @for (item of side.analysis.strengths; track item) {
+                  <li><i class="pi pi-check" style="color: #10B981"></i> {{ item }}</li>
+                }
+              </ul>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-header">
+                <i class="pi pi-times-circle" style="color: #EF4444"></i>
+                <span>Weaknesses</span>
+                <span class="section-count">{{ side.analysis.weaknesses.length }}</span>
+                @if (i === 1 && compare()!.versionA.analysis) {
+                  @if (isWorse(side.analysis.weaknesses.length, compare()!.versionA.analysis!.weaknesses.length)) {
+                    <span class="diff-badge diff-down">+{{ side.analysis.weaknesses.length - compare()!.versionA.analysis!.weaknesses.length }}</span>
+                  } @else if (isImproved(side.analysis.weaknesses.length, compare()!.versionA.analysis!.weaknesses.length)) {
+                    <span class="diff-badge diff-up">{{ side.analysis.weaknesses.length - compare()!.versionA.analysis!.weaknesses.length }}</span>
+                  }
+                }
+              </div>
+              <ul class="compare-list">
+                @for (item of side.analysis.weaknesses; track item) {
+                  <li><i class="pi pi-times" style="color: #EF4444"></i> {{ item }}</li>
+                }
+              </ul>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-header">
+                <i class="pi pi-tag" style="color: #F59E0B"></i>
+                <span>Missing Keywords</span>
+                <span class="section-count">{{ side.analysis.missingKeywords.length }}</span>
+                @if (i === 1 && compare()!.versionA.analysis) {
+                  @let kwDiff = side.analysis.missingKeywords.length - compare()!.versionA.analysis!.missingKeywords.length;
+                  @if (kwDiff > 0) {
+                    <span class="diff-badge diff-down">+{{ kwDiff }}</span>
+                  } @else if (kwDiff < 0) {
+                    <span class="diff-badge diff-up">{{ kwDiff }}</span>
+                  }
+                }
+              </div>
+              <div class="keywords-wrap">
+                @for (kw of side.analysis.missingKeywords; track kw) {
+                  <p-tag [value]="kw" severity="warn" />
+                }
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-header">
+                <i class="pi pi-lightbulb" style="color: #3B82F6"></i>
+                <span>Suggestions</span>
+                <span class="section-count">{{ side.analysis.suggestions.length }}</span>
+              </div>
+              <div class="suggestions-list">
+                @for (s of side.analysis.suggestions; track s.text) {
+                  <div class="suggestion-item">
+                    <span class="suggestion-priority" [ngClass]="'suggestion-' + s.priority">{{ s.priority }}</span>
+                    <span>{{ s.text }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="no-analysis">
+              <i class="pi pi-chart-bar"></i>
+              <p>No analysis for this version.</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

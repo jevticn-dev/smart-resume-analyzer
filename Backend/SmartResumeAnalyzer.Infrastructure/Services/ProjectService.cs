@@ -13,12 +13,21 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
     {
         private readonly IProjectRepository _projectRepository;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IAiAnalysisService _aiAnalysisService;
+        private readonly IPdfParserService _pdfParserService;
         private readonly AppDbContext _context;
 
-        public ProjectService(IProjectRepository projectRepository, IFileStorageService fileStorageService, AppDbContext context)
+        public ProjectService(
+            IProjectRepository projectRepository,
+            IFileStorageService fileStorageService,
+            IAiAnalysisService aiAnalysisService,
+            IPdfParserService pdfParserService,
+            AppDbContext context)
         {
             _projectRepository = projectRepository;
             _fileStorageService = fileStorageService;
+            _aiAnalysisService = aiAnalysisService;
+            _pdfParserService = pdfParserService;
             _context = context;
         }
 
@@ -28,30 +37,13 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
 
             return projects.Select(p =>
             {
-                var latestVersion = p.CvVersions.OrderByDescending(cv => cv.VersionNumber).FirstOrDefault();
-                var analysis = latestVersion?.Analysis;
+                var bestScore = p.CvVersions
+                    .Where(cv => cv.Analysis != null)
+                    .Select(cv => cv.Analysis!.MatchScore)
+                    .DefaultIfEmpty(0)
+                    .Max();
 
-                int? strengthsCount = null;
-                int? weaknessesCount = null;
-                int? missingKeywordsCount = null;
-                int? highCount = null;
-                int? mediumCount = null;
-                int? lowCount = null;
-
-                if (analysis != null)
-                {
-                    var strengths = JsonSerializer.Deserialize<List<string>>(analysis.StrengthsJson) ?? [];
-                    var weaknesses = JsonSerializer.Deserialize<List<string>>(analysis.WeaknessesJson) ?? [];
-                    var missingKeywords = JsonSerializer.Deserialize<List<string>>(analysis.MissingKeywordsJson) ?? [];
-                    var suggestions = JsonSerializer.Deserialize<List<SuggestionDto>>(analysis.SuggestionsJson) ?? [];
-
-                    strengthsCount = strengths.Count;
-                    weaknessesCount = weaknesses.Count;
-                    missingKeywordsCount = missingKeywords.Count;
-                    highCount = suggestions.Count(s => s.Priority == "high");
-                    mediumCount = suggestions.Count(s => s.Priority == "medium");
-                    lowCount = suggestions.Count(s => s.Priority == "low");
-                }
+                var hasBestScore = p.CvVersions.Any(cv => cv.Analysis != null);
 
                 return new ProjectSummaryDto
                 {
@@ -59,15 +51,11 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                     Title = p.Title,
                     JobTitle = p.JobTitle,
                     CompanyName = p.CompanyName,
+                    Industry = p.Industry,
                     Seniority = p.Seniority,
                     Status = p.Status,
-                    LatestMatchScore = analysis?.MatchScore,
-                    StrengthsCount = strengthsCount,
-                    WeaknessesCount = weaknessesCount,
-                    MissingKeywordsCount = missingKeywordsCount,
-                    HighSuggestionsCount = highCount,
-                    MediumSuggestionsCount = mediumCount,
-                    LowSuggestionsCount = lowCount,
+                    VersionCount = p.CvVersions.Count,
+                    BestMatchScore = hasBestScore ? bestScore : null,
                     CreatedAt = p.CreatedAt
                 };
             }).ToList();
@@ -75,12 +63,10 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
 
         public async Task<ProjectDetailDto> GetProjectDetailAsync(Guid projectId, Guid userId)
         {
-            var project = await _projectRepository.GetProjectWithDetailsAsync(projectId, userId)
+            var project = await _projectRepository.GetProjectWithAllVersionsAsync(projectId, userId)
                 ?? throw new NotFoundException("Project not found.");
 
-            var cvVersion = project.CvVersions.OrderByDescending(cv => cv.VersionNumber).FirstOrDefault();
-
-            return MapToDetailDto(project, cvVersion);
+            return MapToDetailDto(project);
         }
 
         public async Task<ProjectDetailDto> CreateProjectAsync(CreateProjectDto dto, Guid userId)
@@ -92,13 +78,98 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 JobTitle = dto.JobTitle,
                 JobDescription = dto.JobDescription,
                 CompanyName = dto.CompanyName,
+                Industry = dto.Industry,
                 Seniority = dto.SeniorityLevel
             };
 
             await _projectRepository.AddAsync(project);
             await _projectRepository.SaveChangesAsync();
 
-            return MapToDetailDto(project, null);
+            return MapToDetailDto(project);
+        }
+
+        public async Task<ProjectDetailDto> UpdateProjectAsync(Guid projectId, UpdateProjectDto dto, Guid userId)
+        {
+            var project = await _projectRepository.GetProjectWithAllVersionsAsync(projectId, userId)
+                ?? throw new NotFoundException("Project not found.");
+
+            project.Title = dto.Title;
+            project.JobTitle = dto.JobTitle;
+            project.CompanyName = dto.CompanyName;
+            project.Industry = dto.Industry;
+            project.Seniority = dto.SeniorityLevel;
+            project.JobDescription = dto.JobDescription;
+            project.Status = dto.Status;
+
+            await _projectRepository.SaveChangesAsync();
+
+            return MapToDetailDto(project);
+        }
+
+        public async Task<ProjectDetailDto> AddCvVersionAsync(Guid projectId, Stream cvStream, string originalFileName, string storedFileName, string notes, Guid userId)
+        {
+            var project = await _projectRepository.GetProjectWithAllVersionsAsync(projectId, userId)
+                ?? throw new NotFoundException("Project not found.");
+
+            var nextVersionNumber = project.CvVersions.Count > 0
+                ? project.CvVersions.Max(v => v.VersionNumber) + 1
+                : 1;
+
+            var cvText = _pdfParserService.ExtractText(cvStream);
+
+            var analysisResult = await _aiAnalysisService.AnalyzeAsync(
+                cvText,
+                project.JobTitle,
+                project.CompanyName,
+                project.JobDescription,
+                project.Seniority
+            );
+
+            var cvVersion = new CvVersion
+            {
+                ProjectId = projectId,
+                VersionNumber = nextVersionNumber,
+                OriginalFileName = originalFileName,
+                StoredFileName = storedFileName,
+                Notes = notes
+            };
+
+            var analysis = new Analysis
+            {
+                CvVersion = cvVersion,
+                MatchScore = analysisResult.MatchScore,
+                StrengthsJson = JsonSerializer.Serialize(analysisResult.Strengths),
+                WeaknessesJson = JsonSerializer.Serialize(analysisResult.Weaknesses),
+                MissingKeywordsJson = JsonSerializer.Serialize(analysisResult.MissingKeywords),
+                SuggestionsJson = JsonSerializer.Serialize(analysisResult.Suggestions),
+                Summary = analysisResult.Summary
+            };
+
+            await _context.CvVersions.AddAsync(cvVersion);
+            await _context.Analyses.AddAsync(analysis);
+            await _context.SaveChangesAsync();
+
+            project.CvVersions.Add(cvVersion);
+
+            return MapToDetailDto(project);
+        }
+
+        public async Task<CompareVersionsDto> CompareVersionsAsync(Guid projectId, Guid versionAId, Guid versionBId, Guid userId)
+        {
+            var project = await _projectRepository.GetProjectWithAllVersionsAsync(projectId, userId)
+                ?? throw new NotFoundException("Project not found.");
+
+            var versionA = project.CvVersions.FirstOrDefault(v => v.Id == versionAId)
+                ?? throw new NotFoundException("Version A not found.");
+
+            var versionB = project.CvVersions.FirstOrDefault(v => v.Id == versionBId)
+                ?? throw new NotFoundException("Version B not found.");
+
+            return new CompareVersionsDto
+            {
+                VersionA = MapToVersionDetailDto(versionA),
+                VersionB = MapToVersionDetailDto(versionB)
+            };
         }
 
         public async Task DeleteProjectAsync(Guid projectId, Guid userId)
@@ -113,7 +184,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             await _projectRepository.SaveChangesAsync();
         }
 
-        public async Task<Guid> SaveAnalysisAsProjectAsync(AnalysisResultDto result, string jobTitle, string companyName, string jobDescription, string seniorityLevel, string storedFileName, string originalFileName, Guid userId, Guid? existingProjectId = null)
+        public async Task<Guid> SaveAnalysisAsProjectAsync(AnalysisResultDto result, string jobTitle, string companyName, string jobDescription, string seniorityLevel, string industry, string storedFileName, string originalFileName, Guid userId, Guid? existingProjectId = null)
         {
             Project project;
 
@@ -132,15 +203,21 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                     JobTitle = jobTitle,
                     CompanyName = companyName,
                     JobDescription = jobDescription,
-                    Seniority = seniorityLevel
+                    Seniority = seniorityLevel,
+                    Industry = industry
                 };
+
                 await _context.Projects.AddAsync(project);
             }
+
+            var nextVersionNumber = await _context.CvVersions
+                .Where(cv => cv.ProjectId == project.Id)
+                .CountAsync() + 1;
 
             var cvVersion = new CvVersion
             {
                 Project = project,
-                VersionNumber = 1,
+                VersionNumber = nextVersionNumber,
                 OriginalFileName = originalFileName,
                 StoredFileName = storedFileName
             };
@@ -212,27 +289,14 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             log.IsConverted = true;
             await _context.SaveChangesAsync();
 
-            return MapToDetailDto(project, cvVersion, analysis, result);
+            cvVersion.Analysis = analysis;
+            project.CvVersions = [cvVersion];
+
+            return MapToDetailDto(project);
         }
 
-        private static ProjectDetailDto MapToDetailDto(Project project, CvVersion? cvVersion, Analysis? analysis = null, AnalysisResultDto? analysisDto = null)
+        private static ProjectDetailDto MapToDetailDto(Project project)
         {
-            AnalysisResultDto? analysisResult = null;
-
-            if (cvVersion?.Analysis != null || analysisDto != null)
-            {
-                var a = analysis ?? cvVersion?.Analysis;
-                analysisResult = analysisDto ?? (a == null ? null : new AnalysisResultDto
-                {
-                    MatchScore = a.MatchScore,
-                    Strengths = JsonSerializer.Deserialize<List<string>>(a.StrengthsJson) ?? [],
-                    Weaknesses = JsonSerializer.Deserialize<List<string>>(a.WeaknessesJson) ?? [],
-                    MissingKeywords = JsonSerializer.Deserialize<List<string>>(a.MissingKeywordsJson) ?? [],
-                    Suggestions = JsonSerializer.Deserialize<List<SuggestionDto>>(a.SuggestionsJson) ?? [],
-                    Summary = a.Summary
-                });
-            }
-
             return new ProjectDetailDto
             {
                 Id = project.Id,
@@ -240,17 +304,35 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 JobTitle = project.JobTitle,
                 JobDescription = project.JobDescription,
                 CompanyName = project.CompanyName,
+                Industry = project.Industry,
                 Seniority = project.Seniority,
                 Status = project.Status,
                 CreatedAt = project.CreatedAt,
-                CvVersion = cvVersion == null ? null : new CvVersionDto
+                CvVersions = project.CvVersions
+                    .OrderByDescending(v => v.VersionNumber)
+                    .Select(MapToVersionDetailDto)
+                    .ToList()
+            };
+        }
+
+        private static CvVersionDetailDto MapToVersionDetailDto(CvVersion v)
+        {
+            return new CvVersionDetailDto
+            {
+                Id = v.Id,
+                VersionNumber = v.VersionNumber,
+                OriginalFileName = v.OriginalFileName,
+                Notes = v.Notes,
+                CreatedAt = v.CreatedAt,
+                Analysis = v.Analysis == null ? null : new AnalysisResultDto
                 {
-                    Id = cvVersion.Id,
-                    OriginalFileName = cvVersion.OriginalFileName,
-                    VersionNumber = cvVersion.VersionNumber,
-                    CreatedAt = cvVersion.CreatedAt
-                },
-                Analysis = analysisResult
+                    MatchScore = v.Analysis.MatchScore,
+                    Strengths = JsonSerializer.Deserialize<List<string>>(v.Analysis.StrengthsJson) ?? [],
+                    Weaknesses = JsonSerializer.Deserialize<List<string>>(v.Analysis.WeaknessesJson) ?? [],
+                    MissingKeywords = JsonSerializer.Deserialize<List<string>>(v.Analysis.MissingKeywordsJson) ?? [],
+                    Suggestions = JsonSerializer.Deserialize<List<SuggestionDto>>(v.Analysis.SuggestionsJson) ?? [],
+                    Summary = v.Analysis.Summary
+                }
             };
         }
     }

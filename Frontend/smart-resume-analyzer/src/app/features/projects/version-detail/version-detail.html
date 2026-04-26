@@ -1,0 +1,54 @@
+<app-navbar />
+
+<div class="version-container">
+  @if (isLoading()) {
+    <div class="version-skeleton">
+      <p-skeleton height="1.5rem" width="30%" />
+      <p-skeleton height="1rem" width="20%" styleClass="mt-2" />
+    </div>
+  } @else if (version()) {
+    <div class="version-header">
+      <button class="back-btn" (click)="goToProject()">
+        <i class="pi pi-arrow-left"></i> {{ projectTitle() }}
+      </button>
+      <div class="version-meta">
+        <h1>V{{ version()!.versionNumber }}
+          @if (version()!.notes) {
+            <span class="version-notes">· {{ version()!.notes }}</span>
+          }
+        </h1>
+        <span class="version-date">{{ version()!.createdAt | date: 'MMM d, y' }}</span>
+      </div>
+    </div>
+
+    <div class="version-layout">
+      <div class="pdf-panel">
+        @if (pdfUrl()) {
+          <pdf-viewer
+            [src]="pdfUrl()!"
+            [render-text]="true"
+            [original-size]="false"
+            [fit-to-page]="true"
+            class="pdf-viewer"
+          />
+        } @else {
+          <div class="no-pdf">
+            <i class="pi pi-file-pdf no-pdf-icon"></i>
+            <p>PDF not available.</p>
+          </div>
+        }
+      </div>
+
+      <div class="analysis-panel">
+        @if (version()!.analysis) {
+          <app-analysis-result-panel [result]="version()!.analysis!" />
+        } @else {
+          <div class="no-analysis">
+            <i class="pi pi-chart-bar no-analysis-icon"></i>
+            <p>No analysis available for this version.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,154 @@
+<app-navbar />
+
+<div class="create-container">
+  <div class="create-card">
+    <div class="create-header">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        (onClick)="cancel()"
+      />
+      <div>
+        <h1>Edit Project</h1>
+        <p>Update the details of this position.</p>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="form-skeleton">
+        @for (i of [1,2,3,4,5]; track i) {
+          <p-skeleton height="3rem" />
+        }
+      </div>
+    } @else {
+      <div class="create-form">
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="title"
+              [(ngModel)]="formData.title"
+              [class.ng-invalid]="touched() && !formData.title.trim()"
+            />
+            <label for="title">Project Name</label>
+          </p-floatlabel>
+          @if (touched() && !formData.title.trim()) {
+            <span class="field-error">Project name is required.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="jobTitle"
+              [(ngModel)]="formData.jobTitle"
+              [class.ng-invalid]="touched() && !formData.jobTitle.trim()"
+            />
+            <label for="jobTitle">Job Title</label>
+          </p-floatlabel>
+          @if (touched() && !formData.jobTitle.trim()) {
+            <span class="field-error">Job title is required.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="companyName"
+              [(ngModel)]="formData.companyName"
+            />
+            <label for="companyName">Company Name (optional)</label>
+          </p-floatlabel>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <p-floatlabel variant="on">
+              <p-select
+                id="industry"
+                [(ngModel)]="formData.industry"
+                [options]="industryOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder=" "
+              />
+              <label for="industry">Industry (optional)</label>
+            </p-floatlabel>
+          </div>
+
+          <div class="form-field">
+            <p-floatlabel variant="on">
+              <p-select
+                id="seniorityLevel"
+                [(ngModel)]="formData.seniorityLevel"
+                [options]="seniorityOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder=" "
+                [class.ng-invalid]="touched() && !formData.seniorityLevel"
+              />
+              <label for="seniorityLevel">Seniority Level</label>
+            </p-floatlabel>
+            @if (touched() && !formData.seniorityLevel) {
+              <span class="field-error">Seniority level is required.</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <p-floatlabel variant="on">
+              <p-select
+                id="status"
+                [(ngModel)]="formData.status"
+                [options]="statusOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder=" "
+                [class.ng-invalid]="touched() && !formData.status"
+              />
+              <label for="status">Status</label>
+            </p-floatlabel>
+            @if (touched() && !formData.status) {
+              <span class="field-error">Status is required.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-field">
+          <p-floatlabel variant="on">
+            <textarea
+              pTextarea
+              id="jobDescription"
+              [(ngModel)]="formData.jobDescription"
+              rows="6"
+              style="resize: none"
+              (input)="onTextareaInput($event)"
+              [class.ng-invalid]="touched() && !formData.jobDescription.trim()"
+            ></textarea>
+            <label for="jobDescription">Job Description</label>
+          </p-floatlabel>
+          @if (touched() && !formData.jobDescription.trim()) {
+            <span class="field-error">Job description is required.</span>
+          }
+        </div>
+
+        <div class="form-actions">
+          <p-button
+            label="Cancel"
+            severity="secondary"
+            (onClick)="cancel()"
+            [disabled]="isSaving()"
+          />
+          <p-button
+            label="Save Changes"
+            icon="pi pi-check"
+            (onClick)="submit()"
+            [loading]="isSaving()"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</div>

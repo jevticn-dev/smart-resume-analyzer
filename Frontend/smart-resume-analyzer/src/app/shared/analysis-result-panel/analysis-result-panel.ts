@@ -25,8 +25,8 @@ export class AnalysisResultPanel {
 
   scoreColor = computed(() => {
     const score = this.result().matchScore;
-    if (score >= 75) return '#10B981';
-    if (score >= 50) return '#F59E0B';
+    if (score >= 70) return '#10B981';
+    if (score >= 40) return '#F59E0B';
     return '#EF4444';
   });
 
