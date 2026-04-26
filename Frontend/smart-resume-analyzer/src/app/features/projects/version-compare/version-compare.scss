@@ -1,0 +1,244 @@
+.compare-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.compare-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.compare-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0.75rem 0 1rem;
+  }
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: #64748B;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover { color: #0D9488; }
+}
+
+.score-diff {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #F1F5F9;
+  color: #475569;
+
+  &.positive { background: #F0FDF4; color: #10B981; }
+  &.negative  { background: #FEF2F2; color: #EF4444; }
+}
+
+// ── Grid — equal height panels ─────────────────────────────
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.compare-panel {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+// ── Panel header ───────────────────────────────────────────
+
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.panel-version {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.panel-notes {
+  font-size: 0.9rem;
+  color: #64748B;
+  font-style: italic;
+}
+
+.panel-date {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  margin-left: auto;
+}
+
+// ── Score ──────────────────────────────────────────────────
+
+.panel-score {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .score-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 0.85rem;
+    color: #94A3B8;
+  }
+}
+
+// ── Summary ────────────────────────────────────────────────
+
+.panel-summary {
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+// ── Sections ───────────────────────────────────────────────
+
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #0F172A;
+}
+
+.section-count {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.diff-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+
+  &.diff-up   { background: #F0FDF4; color: #10B981; }
+  &.diff-down { background: #FEF2F2; color: #EF4444; }
+}
+
+// ── Lists ──────────────────────────────────────────────────
+
+.compare-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+
+    .pi {
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+  }
+}
+
+// ── Keywords ───────────────────────────────────────────────
+
+.keywords-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+// ── Suggestions ────────────────────────────────────────────
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.suggestion-item {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.suggestion-priority {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 0.1rem;
+
+  &.suggestion-high   { background: #FEF2F2; color: #EF4444; }
+  &.suggestion-medium { background: #FFFBEB; color: #F59E0B; }
+  &.suggestion-low    { background: #F0FDF4; color: #10B981; }
+}
+
+// ── No analysis ────────────────────────────────────────────
+
+.no-analysis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #94A3B8;
+  text-align: center;
+
+  .pi {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+}

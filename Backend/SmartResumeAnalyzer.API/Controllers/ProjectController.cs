@@ -19,12 +19,18 @@ namespace SmartResumeAnalyzer.API.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly IProjectService _projectService;
+        private readonly IFileStorageService _fileStorageService;
         private readonly AppDbContext _context;
         private readonly string _basePath;
 
-        public ProjectController(IProjectService projectService, AppDbContext context, IOptions<FileStorageSettings> fileStorageSettings)
+        public ProjectController(
+            IProjectService projectService,
+            IFileStorageService fileStorageService,
+            AppDbContext context,
+            IOptions<FileStorageSettings> fileStorageSettings)
         {
             _projectService = projectService;
+            _fileStorageService = fileStorageService;
             _context = context;
             _basePath = fileStorageSettings.Value.BasePath;
         }
@@ -45,14 +51,67 @@ namespace SmartResumeAnalyzer.API.Controllers
             return Ok(project);
         }
 
-        [HttpGet("{id}/cv")]
-        public async Task<IActionResult> GetCv(Guid id)
+        [HttpPost]
+        public async Task<IActionResult> CreateProject([FromBody] CreateProjectDto dto)
+        {
+            var userId = GetUserId();
+            var project = await _projectService.CreateProjectAsync(dto, userId);
+            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProject(Guid id, [FromBody] UpdateProjectDto dto)
+        {
+            var userId = GetUserId();
+            var project = await _projectService.UpdateProjectAsync(id, dto, userId);
+            return Ok(project);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProject(Guid id)
+        {
+            var userId = GetUserId();
+            await _projectService.DeleteProjectAsync(id, userId);
+            return NoContent();
+        }
+
+        [HttpPost("{id}/versions")]
+        public async Task<IActionResult> AddCvVersion(Guid id, [FromForm] AddCvVersionDto dto, IFormFile cvFile)
+        {
+            var userId = GetUserId();
+
+            if (cvFile == null || cvFile.Length == 0)
+                return BadRequest("CV file is required.");
+
+            using var memoryStream = new MemoryStream();
+            await cvFile.CopyToAsync(memoryStream);
+            var fileBytes = memoryStream.ToArray();
+
+            var storedFileName = await _fileStorageService.SaveAsync(new MemoryStream(fileBytes), cvFile.FileName);
+
+            var project = await _projectService.AddCvVersionAsync(
+                id,
+                new MemoryStream(fileBytes),
+                cvFile.FileName,
+                storedFileName,
+                dto.Notes,
+                userId
+            );
+
+            return Ok(project);
+        }
+
+        [HttpGet("{id}/versions/{versionId}/cv")]
+        public async Task<IActionResult> GetVersionCv(Guid id, Guid versionId)
         {
             var userId = GetUserId();
 
             var cvVersion = await _context.CvVersions
                 .Include(cv => cv.Project)
-                .FirstOrDefaultAsync(cv => cv.Project.Id == id && cv.Project.UserId == userId)
+                .FirstOrDefaultAsync(cv =>
+                    cv.Id == versionId &&
+                    cv.ProjectId == id &&
+                    cv.Project.UserId == userId)
                 ?? throw new NotFoundException("CV not found.");
 
             var filePath = Path.Combine(_basePath, cvVersion.StoredFileName);
@@ -67,20 +126,12 @@ namespace SmartResumeAnalyzer.API.Controllers
             return File(bytes, contentType, cvVersion.OriginalFileName);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateProject([FromBody] CreateProjectDto dto)
+        [HttpGet("{id}/compare")]
+        public async Task<IActionResult> CompareVersions(Guid id, [FromQuery] Guid versionAId, [FromQuery] Guid versionBId)
         {
             var userId = GetUserId();
-            var project = await _projectService.CreateProjectAsync(dto, userId);
-            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProject(Guid id)
-        {
-            var userId = GetUserId();
-            await _projectService.DeleteProjectAsync(id, userId);
-            return NoContent();
+            var result = await _projectService.CompareVersionsAsync(id, versionAId, versionBId, userId);
+            return Ok(result);
         }
 
         [HttpPost("from-guest-analysis")]

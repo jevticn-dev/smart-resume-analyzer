@@ -86,7 +86,7 @@ namespace SmartResumeAnalyzer.API.Controllers
             if (userId.HasValue)
             {
                 var projectId = await _projectService.SaveAnalysisAsProjectAsync(
-                    result, request.JobTitle, request.CompanyName, request.JobDescription, request.SeniorityLevel,
+                    result, request.JobTitle, request.CompanyName, request.JobDescription, request.SeniorityLevel, request.Industry,
                     storedFileName, cvFile.FileName, userId.Value, request.ProjectId);
 
                 result.ProjectId = projectId;

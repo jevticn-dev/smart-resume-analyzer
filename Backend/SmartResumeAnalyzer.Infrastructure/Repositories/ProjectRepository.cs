@@ -33,6 +33,15 @@ namespace SmartResumeAnalyzer.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Project?> GetProjectWithAllVersionsAsync(Guid projectId, Guid userId)
+        {
+            return await _context.Projects
+                .Where(p => p.Id == projectId && p.UserId == userId)
+                .Include(p => p.CvVersions)
+                    .ThenInclude(cv => cv.Analysis)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task AddAsync(Project project)
         {
             await _context.Projects.AddAsync(project);

@@ -19,5 +19,8 @@ namespace SmartResumeAnalyzer.Core.DTOs.Analysis
 
         [Required(ErrorMessage = "Seniority level is required.")]
         public string SeniorityLevel { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Industry is required.")]
+        public string Industry { get; set; } = string.Empty;
     }
 }

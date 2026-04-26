@@ -41,6 +41,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/projects/create/project-create').then(m => m.ProjectCreate)
   },
   {
+    path: 'projects/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/projects/edit/project-edit').then(m => m.ProjectEdit)
+  },
+  {
+    path: 'projects/:id/compare',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/projects/version-compare/version-compare').then(m => m.VersionCompare)
+  },
+  {
+    path: 'projects/:id/versions/:versionId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/projects/version-detail/version-detail').then(m => m.VersionDetail)
+  },
+  {
     path: 'projects/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./features/projects/detail/project-detail').then(m => m.ProjectDetail)

@@ -1,0 +1,109 @@
+.version-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.version-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem 0;
+}
+
+.version-header {
+  margin-bottom: 1.5rem;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: #64748B;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.75rem;
+
+  &:hover {
+    color: #0D9488;
+  }
+}
+
+.version-meta {
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 0.25rem;
+  }
+}
+
+.version-notes {
+  font-weight: 400;
+  color: #64748B;
+  font-size: 1.2rem;
+}
+
+.version-date {
+  font-size: 0.875rem;
+  color: #94A3B8;
+}
+
+.version-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 220px);
+  min-height: 600px;
+}
+
+.pdf-panel {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+}
+
+.no-pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94A3B8;
+
+  .no-pdf-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.analysis-panel {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.no-analysis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #94A3B8;
+  text-align: center;
+
+  .no-analysis-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+}
