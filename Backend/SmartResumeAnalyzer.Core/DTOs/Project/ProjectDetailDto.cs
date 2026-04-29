@@ -12,6 +12,7 @@ namespace SmartResumeAnalyzer.Core.DTOs.Project
         public string Industry { get; set; } = string.Empty;
         public string Seniority { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string CompanyEmail { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public List<CvVersionDetailDto> CvVersions { get; set; } = [];
     }

@@ -6,10 +6,13 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
+import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DatePipe } from '@angular/common';
+import { QuillModule } from 'ngx-quill';
 import { Navbar } from '../../../layout/navbar/navbar';
 import { Project } from '../../../core/services/project';
+import { Email } from '../../../core/services/email';
 import { ErrorHandler } from '../../../core/services/error-handler';
 import { Toast } from '../../../core/services/toast';
 import { ProjectDetail as ProjectDetailModel, CvVersionDetail } from '../../../core/models/project.models';
@@ -17,13 +20,18 @@ import { AnalysisResultPanel } from '../../../shared/analysis-result-panel/analy
 
 @Component({
   selector: 'app-project-detail',
-  imports: [PdfViewerModule, ButtonModule, SkeletonModule, TagModule, DialogModule, TextareaModule, FormsModule, NgClass, Navbar, AnalysisResultPanel, DatePipe],
+  imports: [
+    PdfViewerModule, ButtonModule, SkeletonModule, TagModule, DialogModule,
+    TextareaModule, InputTextModule, FormsModule, NgClass, Navbar,
+    AnalysisResultPanel, DatePipe, QuillModule
+  ],
   templateUrl: './project-detail.html',
   styleUrl: './project-detail.scss'
 })
 export class ProjectDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private projectService = inject(Project);
+  private emailService = inject(Email);
   private errorHandler = inject(ErrorHandler);
   private toast = inject(Toast);
   private router = inject(Router);
@@ -41,6 +49,24 @@ export class ProjectDetail implements OnInit {
   compareMode = signal<boolean>(false);
   selectedVersionIds = signal<string[]>([]);
   descriptionExpanded = signal<boolean>(false);
+
+  sendModalOpen = signal<boolean>(false);
+  sendModalStep = signal<1 | 2 | 3>(1);
+  isGeneratingDraft = signal<boolean>(false);
+  isSendingEmail = signal<boolean>(false);
+  selectedVersionForEmail = signal<CvVersionDetail | null>(null);
+
+  emailTo = '';
+  emailSubject = '';
+  emailBody = '';
+
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['clean']
+    ]
+  };
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.paramMap.get('id')!;
@@ -191,5 +217,88 @@ export class ProjectDetail implements OnInit {
 
   toggleDescription(): void {
     this.descriptionExpanded.update(v => !v);
+  }
+
+  openSendModal(): void {
+    const versions = this.project()?.cvVersions ?? [];
+    if (versions.length === 0) {
+      this.toast.error('Upload a CV version before sending an application.');
+      return;
+    }
+    this.sendModalOpen.set(true);
+    this.sendModalStep.set(versions.length === 1 ? 2 : 1);
+    this.selectedVersionForEmail.set(versions.length === 1 ? versions[0] : null);
+    this.emailTo = this.project()?.companyEmail ?? '';
+    this.emailSubject = '';
+    this.emailBody = '';
+  }
+
+  closeSendModal(): void {
+    this.sendModalOpen.set(false);
+    this.sendModalStep.set(1);
+    this.selectedVersionForEmail.set(null);
+    this.isGeneratingDraft.set(false);
+  }
+
+  selectVersionForEmail(version: CvVersionDetail): void {
+    this.selectedVersionForEmail.set(version);
+  }
+
+  goToStep2(): void {
+    if (!this.selectedVersionForEmail()) return;
+    this.sendModalStep.set(2);
+  }
+
+  writeManually(): void {
+    this.emailSubject = '';
+    this.emailBody = '';
+    this.sendModalStep.set(3);
+  }
+
+  generateDraft(): void {
+    const version = this.selectedVersionForEmail();
+    if (!version) return;
+
+    this.isGeneratingDraft.set(true);
+    this.emailService.generateDraft({
+      projectId: this.projectId,
+      versionId: version.id
+    }).subscribe({
+      next: (draft) => {
+        this.emailSubject = draft.subject;
+        this.emailBody = draft.body;
+        this.isGeneratingDraft.set(false);
+        this.sendModalStep.set(3);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+        this.isGeneratingDraft.set(false);
+      }
+    });
+  }
+
+  submitEmail(): void {
+    const version = this.selectedVersionForEmail();
+    if (!version || !this.emailTo || !this.emailSubject || !this.emailBody) return;
+
+    this.isSendingEmail.set(true);
+    this.emailService.sendEmail({
+      projectId: this.projectId,
+      versionId: version.id,
+      toEmail: this.emailTo,
+      subject: this.emailSubject,
+      body: this.emailBody
+    }).subscribe({
+      next: (updatedProject) => {
+        this.project.set(updatedProject);
+        this.isSendingEmail.set(false);
+        this.closeSendModal();
+        this.toast.success('Application sent successfully.');
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+        this.isSendingEmail.set(false);
+      }
+    });
   }
 }

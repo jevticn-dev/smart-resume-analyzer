@@ -14,6 +14,7 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? SentAt { get; set; }
         public int ReminderDays { get; set; } = 7;
+        public string CompanyEmail { get; set; } = string.Empty;
 
         public User User { get; set; } = null!;
         public ICollection<CvVersion> CvVersions { get; set; } = new List<CvVersion>();
