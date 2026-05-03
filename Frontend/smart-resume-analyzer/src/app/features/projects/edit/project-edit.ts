@@ -48,7 +48,8 @@ export class ProjectEdit implements OnInit {
     industry: '',
     seniorityLevel: '',
     jobDescription: '',
-    status: ''
+    status: '',
+    companyEmail: ''
   };
 
   seniorityOptions = SENIORITY_OPTIONS
@@ -66,7 +67,8 @@ export class ProjectEdit implements OnInit {
           industry: data.industry,
           seniorityLevel: data.seniority,
           jobDescription: data.jobDescription,
-          status: data.status
+          status: data.status,
+          companyEmail: data.companyEmail
         };
         this.isLoading.set(false);
       },

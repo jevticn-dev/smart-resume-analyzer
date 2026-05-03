@@ -42,6 +42,7 @@ export class ProjectCreate {
     companyName: '',
     industry: '',
     jobDescription: '',
+    companyEmail: '',
     seniorityLevel: ''
   };
 

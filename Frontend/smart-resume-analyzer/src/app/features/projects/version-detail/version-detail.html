@@ -12,11 +12,19 @@
         <i class="pi pi-arrow-left"></i> {{ projectTitle() }}
       </button>
       <div class="version-meta">
-        <h1>V{{ version()!.versionNumber }}
-          @if (version()!.notes) {
-            <span class="version-notes">· {{ version()!.notes }}</span>
-          }
-        </h1>
+        <div class="version-meta-top">
+          <h1>V{{ version()!.versionNumber }}
+            @if (version()!.notes) {
+              <span class="version-notes">· {{ version()!.notes }}</span>
+            }
+          </h1>
+          <p-button
+            label="Send Application"
+            icon="pi pi-send"
+            size="small"
+            (onClick)="openSendModal()"
+          />
+        </div>
         <span class="version-date">{{ version()!.createdAt | date: 'MMM d, y' }}</span>
       </div>
     </div>
@@ -52,3 +60,90 @@
     </div>
   }
 </div>
+
+<!-- Send Application Modal -->
+<p-dialog
+  header="Send Application"
+  [(visible)]="sendModalOpen"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="send-dialog"
+  [style]="{ width: '640px' }"
+>
+  <!-- Step 2 — Choose method -->
+  @if (sendModalStep() === 2) {
+    <div class="send-modal-body">
+      <p class="step-label">How would you like to write the email?</p>
+      <div class="method-cards">
+        <div class="method-card" (click)="generateDraft()">
+          @if (isGeneratingDraft()) {
+            <i class="pi pi-spin pi-spinner method-icon"></i>
+            <span class="method-title">Generating...</span>
+          } @else {
+            <i class="pi pi-sparkles method-icon ai"></i>
+            <span class="method-title">Generate with AI</span>
+            <span class="method-sub">Let AI write a personalized email based on your CV and job description</span>
+          }
+        </div>
+        <div class="method-card" (click)="writeManually()">
+          <i class="pi pi-pencil method-icon manual"></i>
+          <span class="method-title">Write manually</span>
+          <span class="method-sub">Start with a blank editor and write your own email</span>
+        </div>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="closeSendModal()"
+        [disabled]="isGeneratingDraft()"
+      />
+    </ng-template>
+  }
+
+  <!-- Step 3 — Edit and send -->
+  @if (sendModalStep() === 3) {
+    <div class="send-modal-body">
+      <div class="send-field">
+        <label>To</label>
+        <input pInputText [(ngModel)]="emailTo" placeholder="hr@company.com" class="send-input" />
+      </div>
+      <div class="send-field">
+        <label>Subject</label>
+        <input pInputText [(ngModel)]="emailSubject" placeholder="Application for..." class="send-input" />
+      </div>
+      <div class="send-field">
+        <label>Message</label>
+        <quill-editor
+          [(ngModel)]="emailBody"
+          [modules]="quillModules"
+          theme="snow"
+          class="email-editor"
+        />
+      </div>
+      <div class="attachment-chip">
+        <i class="pi pi-paperclip"></i>
+        <span>{{ version()!.originalFileName }} will be attached</span>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Back"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="sendModalStep.set(2)"
+        [disabled]="isSendingEmail()"
+      />
+      <p-button
+        label="Send Email"
+        icon="pi pi-send"
+        [loading]="isSendingEmail()"
+        [disabled]="!emailTo || !emailSubject || !emailBody"
+        (onClick)="submitEmail()"
+      />
+    </ng-template>
+  }
+</p-dialog>

@@ -27,5 +27,8 @@ namespace SmartResumeAnalyzer.Core.DTOs.Project
 
         [Required]
         public string Status { get; set; } = string.Empty;
+
+        [MaxLength(200)]
+        public string CompanyEmail { get; set; } = string.Empty;
     }
 }

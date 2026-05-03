@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartResumeAnalyzer.Core.Configuration;
 using SmartResumeAnalyzer.Core.Interfaces;
+using SmartResumeAnalyzer.Core.Settings;
 using SmartResumeAnalyzer.Infrastructure.Data;
 using SmartResumeAnalyzer.Infrastructure.Repositories;
 using SmartResumeAnalyzer.Infrastructure.Services;
@@ -19,6 +20,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
             services.Configure<RateLimitSettings>(configuration.GetSection("RateLimitSettings"));
             services.Configure<GroqSettings>(configuration.GetSection("GroqSettings"));
             services.Configure<FileStorageSettings>(configuration.GetSection("FileStorageSettings"));
+            services.Configure<SendGridSettings>(configuration.GetSection("SendGrid"));
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -28,8 +30,10 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
             services.AddScoped<IPdfParserService, PdfParserService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IProjectService, ProjectService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             services.AddHttpClient<IAiAnalysisService, AiAnalysisService>();
+            services.AddHttpClient<IAiEmailService, AiEmailService>();
 
             return services;
         }

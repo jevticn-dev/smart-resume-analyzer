@@ -29,6 +29,12 @@
             size="small"
             (onClick)="openUploadModal()"
           />
+          <p-button
+            label="Send Application"
+            icon="pi pi-send"
+            size="small"
+            (onClick)="openSendModal()"
+          />
           @if (canCompare()) {
             <p-button
               [label]="compareMode() ? 'Cancel Compare' : 'Compare'"
@@ -54,6 +60,15 @@
           }
           <span class="badge" [ngClass]="'badge-seniority-' + project()!.seniority.toLowerCase()">{{ project()!.seniority }}</span>
         </div>
+
+        @if (!project()!.companyEmail) {
+          <div class="email-warning">
+            <i class="pi pi-info-circle"></i>
+            <span>No recipient email set — add it in Edit to enable sending applications.</span>
+            <button (click)="editProject()">Edit Project</button>
+          </div>
+        }
+
         @if (project()!.jobDescription) {
           <p class="header-description" [class.expanded]="descriptionExpanded()">{{ project()!.jobDescription }}</p>
           <button class="read-more-btn" (click)="toggleDescription()">
@@ -138,7 +153,6 @@
             }
 
             <div class="flip-card-inner">
-
               <div class="flip-card-front">
                 <div class="card-front-header">
                   <div class="project-title-group">
@@ -147,10 +161,7 @@
                       <span class="project-company">{{ version.notes }}</span>
                     }
                   </div>
-                  <p-tag
-                    [value]="'V' + version.versionNumber"
-                    severity="secondary"
-                  />
+                  <p-tag [value]="'V' + version.versionNumber" severity="secondary" />
                 </div>
 
                 <div class="card-front-score">
@@ -250,7 +261,6 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         }
@@ -259,6 +269,7 @@
   }
 </div>
 
+<!-- Upload Modal -->
 <p-dialog
   header="Add CV Version"
   [(visible)]="uploadModalOpen"
@@ -302,12 +313,7 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <p-button
-      label="Cancel"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="closeUploadModal()"
-    />
+    <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="closeUploadModal()" />
     <p-button
       label="Upload & Analyze"
       icon="pi pi-sparkles"
@@ -315,5 +321,134 @@
       [disabled]="!selectedFile()"
       (onClick)="submitUpload()"
     />
+  </ng-template>
+</p-dialog>
+
+<!-- Send Application Modal -->
+<p-dialog
+  header="Send Application"
+  [(visible)]="sendModalOpen"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="send-dialog"
+  [style]="{ width: '640px' }"
+>
+  <div class="send-modal-body">
+    <!-- Step 1 — Choose CV Version -->
+    @if (sendModalStep() === 1 && project()) {
+      <p class="step-label">Select a CV version to send</p>
+      <div class="version-select-grid">
+        @for (version of project()!.cvVersions; track version.id) {
+          <div
+            class="version-select-card"
+            [class.selected]="selectedVersionForEmail()?.id === version.id"
+            (click)="selectVersionForEmail(version)"
+          >
+            <div class="vsc-header">
+              <span class="vsc-version">V{{ version.versionNumber }}</span>
+              @if (selectedVersionForEmail()?.id === version.id) {
+                <i class="pi pi-check-circle vsc-check"></i>
+              }
+            </div>
+            @if (version.notes) {
+              <span class="vsc-notes">{{ version.notes }}</span>
+            }
+            @if (version.analysis) {
+              <span class="vsc-score" [style.color]="getScoreColor(version.analysis.matchScore)">
+                {{ version.analysis.matchScore }} match
+              </span>
+            }
+            <span class="vsc-date">{{ version.createdAt | date: 'MMM d, y' }}</span>
+            <span class="vsc-file">{{ version.originalFileName }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Step 2 — Choose method -->
+    @if (sendModalStep() === 2) {
+      <p class="step-label">How would you like to write the email?</p>
+      <div class="method-cards">
+        <div class="method-card" (click)="generateDraft()">
+          @if (isGeneratingDraft()) {
+            <i class="pi pi-spin pi-spinner method-icon"></i>
+            <span class="method-title">Generating...</span>
+          } @else {
+            <i class="pi pi-sparkles method-icon ai"></i>
+            <span class="method-title">Generate with AI</span>
+            <span class="method-sub">Let AI write a personalized email based on your CV and job description</span>
+          }
+        </div>
+        <div class="method-card" (click)="writeManually()">
+          <i class="pi pi-pencil method-icon manual"></i>
+          <span class="method-title">Write manually</span>
+          <span class="method-sub">Start with a blank editor and write your own email</span>
+        </div>
+      </div>
+    }
+
+    <!-- Step 3 — Edit and send -->
+    @if (sendModalStep() === 3) {
+      <div class="send-field">
+        <label>To</label>
+        <input pInputText [(ngModel)]="emailTo" placeholder="hr@company.com" class="send-input" />
+      </div>
+      <div class="send-field">
+        <label>Subject</label>
+        <input pInputText [(ngModel)]="emailSubject" placeholder="Application for..." class="send-input" />
+      </div>
+      <div class="send-field">
+        <label>Message</label>
+        <quill-editor
+          [(ngModel)]="emailBody"
+          [modules]="quillModules"
+          theme="snow"
+          class="email-editor"
+        />
+      </div>
+      <div class="attachment-chip">
+        <i class="pi pi-paperclip"></i>
+        <span>{{ selectedVersionForEmail()?.originalFileName }} will be attached</span>
+      </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    @if (sendModalStep() === 1) {
+      <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="closeSendModal()" />
+      <p-button
+        label="Next"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        [disabled]="!selectedVersionForEmail()"
+        (onClick)="goToStep2()"
+      />
+    }
+    @if (sendModalStep() === 2) {
+      <p-button
+        label="Back"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="sendModalStep.set(1)"
+        [disabled]="isGeneratingDraft()"
+      />
+    }
+    @if (sendModalStep() === 3) {
+      <p-button
+        label="Back"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="sendModalStep.set(2)"
+        [disabled]="isSendingEmail()"
+      />
+      <p-button
+        label="Send Email"
+        icon="pi pi-send"
+        [loading]="isSendingEmail()"
+        [disabled]="!emailTo || !emailSubject || !emailBody"
+        (onClick)="submitEmail()"
+      />
+    }
   </ng-template>
 </p-dialog>

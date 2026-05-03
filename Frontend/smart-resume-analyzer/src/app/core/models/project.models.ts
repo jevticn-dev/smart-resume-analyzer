@@ -32,6 +32,7 @@ export interface ProjectDetail {
   seniority: string;
   status: string;
   createdAt: string;
+  companyEmail: string;
   cvVersions: CvVersionDetail[];
 }
 
@@ -42,6 +43,7 @@ export interface CreateProject {
   industry: string;
   jobDescription: string;
   seniorityLevel: string;
+  companyEmail: string;
 }
 
 export interface UpdateProject {
@@ -52,6 +54,7 @@ export interface UpdateProject {
   seniorityLevel: string;
   jobDescription: string;
   status: string;
+  companyEmail: string;
 }
 
 export interface CompareVersions {

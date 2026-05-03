@@ -654,3 +654,223 @@
   opacity: 0;
   cursor: pointer;
 }
+
+.email-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: #92400E;
+
+  i {
+    font-size: 1rem;
+    color: #D97706;
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+  }
+
+  button {
+    background: none;
+    border: 1px solid #D97706;
+    border-radius: 6px;
+    color: #D97706;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+      background: #FEF3C7;
+    }
+  }
+}
+
+// ── Send Application Modal ─────────────────────────────────
+
+.send-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.step-label {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 0;
+}
+
+// ── Step 1 — Version select ────────────────────────────────
+
+.version-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.version-select-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: #0D9488;
+  }
+
+  &.selected {
+    border-color: #0D9488;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+    background: #F0FDFA;
+  }
+}
+
+.vsc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vsc-version {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.vsc-check {
+  color: #0D9488;
+  font-size: 1rem;
+}
+
+.vsc-notes {
+  font-size: 0.8rem;
+  color: #64748B;
+}
+
+.vsc-score {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.vsc-date {
+  font-size: 0.75rem;
+  color: #94A3B8;
+}
+
+.vsc-file {
+  font-size: 0.72rem;
+  color: #94A3B8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Step 2 — Method select ─────────────────────────────────
+
+.method-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.method-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: #0D9488;
+    background: #F0FDFA;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.1);
+  }
+}
+
+.method-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+
+  &.ai { color: #7C3AED; }
+  &.manual { color: #0D9488; }
+}
+
+.method-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.method-sub {
+  font-size: 0.8rem;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+// ── Step 3 — Email editor ──────────────────────────────────
+
+.send-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+}
+
+.send-input {
+  width: 100%;
+}
+
+.email-editor {
+  .ql-container {
+    min-height: 200px;
+    font-size: 0.9rem;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
+  .ql-toolbar {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  color: #475569;
+  align-self: flex-start;
+
+  i {
+    color: #0D9488;
+    font-size: 0.85rem;
+  }
+}

@@ -25,6 +25,11 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
 
             return storedFileName;
         }
+        public async Task<byte[]> ReadAsync(string storedFileName)
+        {
+            var path = Path.Combine(_basePath, storedFileName);
+            return await File.ReadAllBytesAsync(path);
+        }
 
         public void Delete(string storedFileName)
         {

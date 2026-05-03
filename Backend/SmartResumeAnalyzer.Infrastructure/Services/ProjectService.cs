@@ -79,6 +79,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 JobDescription = dto.JobDescription,
                 CompanyName = dto.CompanyName,
                 Industry = dto.Industry,
+                CompanyEmail = dto.CompanyEmail,
                 Seniority = dto.SeniorityLevel
             };
 
@@ -100,6 +101,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             project.Seniority = dto.SeniorityLevel;
             project.JobDescription = dto.JobDescription;
             project.Status = dto.Status;
+            project.CompanyEmail = dto.CompanyEmail;
 
             await _projectRepository.SaveChangesAsync();
 
@@ -304,6 +306,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 JobTitle = project.JobTitle,
                 JobDescription = project.JobDescription,
                 CompanyName = project.CompanyName,
+                CompanyEmail = project.CompanyEmail,
                 Industry = project.Industry,
                 Seniority = project.Seniority,
                 Status = project.Status,

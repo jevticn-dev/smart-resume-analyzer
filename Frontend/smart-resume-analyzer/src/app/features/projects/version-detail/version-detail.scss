@@ -107,3 +107,118 @@
     margin-bottom: 1rem;
   }
 }
+
+.version-meta-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+// ── Send Application Modal ─────────────────────────────────
+
+.send-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.step-label {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 0;
+}
+
+.method-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.method-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: #0D9488;
+    background: #F0FDFA;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.1);
+  }
+}
+
+.method-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+
+  &.ai { color: #7C3AED; }
+  &.manual { color: #0D9488; }
+}
+
+.method-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.method-sub {
+  font-size: 0.8rem;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.send-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+}
+
+.send-input {
+  width: 100%;
+}
+
+.email-editor {
+  .ql-container {
+    min-height: 200px;
+    font-size: 0.9rem;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
+  .ql-toolbar {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  color: #475569;
+  align-self: flex-start;
+
+  i {
+    color: #0D9488;
+    font-size: 0.85rem;
+  }
+}
