@@ -18,12 +18,21 @@
               <span class="version-notes">· {{ version()!.notes }}</span>
             }
           </h1>
-          <p-button
-            label="Send Application"
-            icon="pi pi-send"
-            size="small"
-            (onClick)="openSendModal()"
-          />
+          <div class="version-actions">
+            <p-button
+              label="Send Application"
+              icon="pi pi-send"
+              size="small"
+              (onClick)="openSendModal()"
+            />
+            <p-button
+              label="Export PDF"
+              icon="pi pi-download"
+              severity="secondary"
+              size="small"
+              (onClick)="exportPdf()"
+            />
+          </div>
         </div>
         <span class="version-date">{{ version()!.createdAt | date: 'MMM d, y' }}</span>
       </div>

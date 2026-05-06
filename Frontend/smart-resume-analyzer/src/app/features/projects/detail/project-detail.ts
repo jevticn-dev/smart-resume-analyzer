@@ -17,6 +17,7 @@ import { ErrorHandler } from '../../../core/services/error-handler';
 import { Toast } from '../../../core/services/toast';
 import { ProjectDetail as ProjectDetailModel, CvVersionDetail } from '../../../core/models/project.models';
 import { AnalysisResultPanel } from '../../../shared/analysis-result-panel/analysis-result-panel';
+import { ExportService } from '../../../core/services/export';
 
 @Component({
   selector: 'app-project-detail',
@@ -35,6 +36,7 @@ export class ProjectDetail implements OnInit {
   private errorHandler = inject(ErrorHandler);
   private toast = inject(Toast);
   private router = inject(Router);
+  private exportService = inject(ExportService);
 
   project = signal<ProjectDetailModel | null>(null);
   isLoading = signal<boolean>(true);
@@ -55,6 +57,8 @@ export class ProjectDetail implements OnInit {
   isGeneratingDraft = signal<boolean>(false);
   isSendingEmail = signal<boolean>(false);
   selectedVersionForEmail = signal<CvVersionDetail | null>(null);
+  exportModalOpen = signal(false);
+  exportSelectedVersionId = signal<string | null>(null);
 
   emailTo = '';
   emailSubject = '';
@@ -69,8 +73,10 @@ export class ProjectDetail implements OnInit {
   };
 
   ngOnInit(): void {
-    this.projectId = this.route.snapshot.paramMap.get('id')!;
-    this.loadProject();
+    this.route.paramMap.subscribe(params => {
+      this.projectId = params.get('id')!;
+      this.loadProject();
+    });
   }
 
   loadProject(): void {
@@ -300,5 +306,27 @@ export class ProjectDetail implements OnInit {
         this.isSendingEmail.set(false);
       }
     });
+  }
+
+  openExportModal(): void {
+    const project = this.project();
+    if (!project) return;
+    if (project.cvVersions.length === 1) {
+      this.exportService.exportAnalysisPdf(project, project.cvVersions[0]);
+      return;
+    }
+    this.exportSelectedVersionId.set(null);
+    this.exportModalOpen.set(true);
+  }
+
+  confirmExport(): void {
+    const project = this.project();
+    const versionId = this.exportSelectedVersionId();
+    if (!project || !versionId) return;
+    const version = project.cvVersions.find(v => v.id === versionId);
+    if (version) {
+      this.exportService.exportAnalysisPdf(project, version);
+      this.exportModalOpen.set(false);
+    }
   }
 }

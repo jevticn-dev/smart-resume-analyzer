@@ -1,0 +1,174 @@
+<app-navbar />
+<div class="profile-page">
+  <div class="profile-container">
+
+    @if (isLoading()) {
+      <div class="profile-loading">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Loading profile...</span>
+      </div>
+    }
+
+    @if (!isLoading() && userProfile(); as profile) {
+      <div class="profile-grid">
+
+        <div class="profile-card">
+          <div class="profile-avatar">{{ getInitials() }}</div>
+          <div class="profile-name">{{ profile.firstName }} {{ profile.lastName }}</div>
+          <div class="profile-email">{{ profile.email }}</div>
+
+          <div class="remaining-chip">
+            <i class="pi pi-bolt"></i>
+            {{ profile.stats.remainingAnalysesToday }} AI analyses remaining today
+          </div>
+
+          @if (!isEditMode()) {
+            <div class="profile-info-section">
+              <div class="profile-info-row">
+                <span class="profile-info-label">Reminder interval</span>
+                <span class="profile-info-value">
+                  @if (profile.reminderIntervalDays === 1) { 1 minute (demo) }
+                  @else { {{ profile.reminderIntervalDays }} days }
+                </span>
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              <p-button
+                label="Edit Profile"
+                icon="pi pi-pencil"
+                size="small"
+                (onClick)="enterEditMode()"
+              />
+              <p-button
+                label="Change Password"
+                icon="pi pi-lock"
+                severity="secondary"
+                size="small"
+                (onClick)="showPasswordSection.set(!showPasswordSection())"
+              />
+            </div>
+          }
+
+          @if (isEditMode()) {
+            <div class="profile-form">
+              <p-floatlabel variant="on">
+                <input pInputText id="firstName" [(ngModel)]="formData.firstName" />
+                <label for="firstName">First Name</label>
+              </p-floatlabel>
+
+              <p-floatlabel variant="on">
+                <input pInputText id="lastName" [(ngModel)]="formData.lastName" />
+                <label for="lastName">Last Name</label>
+              </p-floatlabel>
+
+              <p-floatlabel variant="on">
+                <p-select
+                  inputId="reminderInterval"
+                  [(ngModel)]="formData.reminderIntervalDays"
+                  [options]="reminderOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                />
+                <label for="reminderInterval">Reminder Interval</label>
+              </p-floatlabel>
+
+              <div class="form-actions">
+                <p-button
+                  label="Save"
+                  icon="pi pi-check"
+                  size="small"
+                  [loading]="isSavingProfile()"
+                  (onClick)="saveProfile()"
+                />
+                <p-button
+                  label="Cancel"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="cancelEdit()"
+                />
+              </div>
+            </div>
+          }
+
+          @if (showPasswordSection()) {
+            <div class="password-section">
+              <div class="password-section-title">Change Password</div>
+
+              <p-floatlabel variant="on">
+                <input pInputText id="currentPassword" type="password" [(ngModel)]="passwordData.currentPassword" />
+                <label for="currentPassword">Current Password</label>
+              </p-floatlabel>
+
+              <p-floatlabel variant="on">
+                <input pInputText id="newPassword" type="password" [(ngModel)]="passwordData.newPassword" />
+                <label for="newPassword">New Password</label>
+              </p-floatlabel>
+
+              <p-floatlabel variant="on">
+                <input pInputText id="confirmPassword" type="password" [(ngModel)]="passwordData.confirmPassword" />
+                <label for="confirmPassword">Confirm New Password</label>
+              </p-floatlabel>
+
+              <div class="form-actions">
+                <p-button
+                  label="Save Password"
+                  icon="pi pi-check"
+                  size="small"
+                  [loading]="isSavingPassword()"
+                  (onClick)="savePassword()"
+                />
+                <p-button
+                  label="Cancel"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="showPasswordSection.set(false)"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-card-title">Statistics</div>
+
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{{ profile.stats.totalProjects }}</div>
+              <div class="stat-label">Total Projects</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ profile.stats.totalAnalyses }}</div>
+              <div class="stat-label">Total Analyses</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ profile.stats.sentApplications }}</div>
+              <div class="stat-label">Sent</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value accepted">{{ profile.stats.acceptedApplications }}</div>
+              <div class="stat-label">Accepted</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value declined">{{ profile.stats.declinedApplications }}</div>
+              <div class="stat-label">Declined</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ profile.stats.averageMatchScore }}%</div>
+              <div class="stat-label">Avg Match Score</div>
+            </div>
+          </div>
+
+          @if (chartData) {
+            <div class="chart-wrapper">
+              <div class="chart-title">Project Status Distribution</div>
+              <p-chart type="doughnut" [data]="chartData" [options]="chartOptions" />
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

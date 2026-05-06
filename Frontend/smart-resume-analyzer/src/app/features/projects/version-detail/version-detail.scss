@@ -113,6 +113,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+
+  .version-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 // ── Send Application Modal ─────────────────────────────────

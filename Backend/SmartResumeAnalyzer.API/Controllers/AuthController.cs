@@ -35,12 +35,41 @@ namespace SmartResumeAnalyzer.API.Controllers
         [Authorize]
         public async Task<ActionResult<UserProfileDto>> GetCurrentUser()
         {
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var profile = await _authService.GetCurrentUserAsync(userId.Value);
+            return Ok(profile);
+        }
+
+        [HttpPut("profile")]
+        [Authorize]
+        public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileDto dto)
+        {
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var profile = await _authService.UpdateProfileAsync(userId.Value, dto);
+            return Ok(profile);
+        }
+
+        [HttpPut("change-password")]
+        [Authorize]
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            await _authService.ChangePasswordAsync(userId.Value, dto);
+            return NoContent();
+        }
+
+        private Guid? GetUserId()
+        {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId))
-                return Unauthorized();
-
-            var profile = await _authService.GetCurrentUserAsync(userId);
-            return Ok(profile);
+                return null;
+            return userId;
         }
     }
 }

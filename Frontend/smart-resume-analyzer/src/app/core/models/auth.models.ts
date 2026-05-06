@@ -17,8 +17,32 @@ export interface AuthResponse {
   lastName: string;
 }
 
+export interface UserStats {
+  totalProjects: number;
+  totalCvVersions: number;
+  totalAnalyses: number;
+  sentApplications: number;
+  acceptedApplications: number;
+  declinedApplications: number;
+  averageMatchScore: number;
+  remainingAnalysesToday: number;
+}
+
 export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
+  reminderIntervalDays: number;
+  stats: UserStats;
+}
+
+export interface UpdateProfile {
+  firstName: string;
+  lastName: string;
+  reminderIntervalDays: number;
+}
+
+export interface ChangePassword {
+  currentPassword: string;
+  newPassword: string;
 }
