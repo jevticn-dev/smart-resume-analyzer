@@ -874,3 +874,10 @@
     font-size: 0.85rem;
   }
 }
+
+.version-select-list
+{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

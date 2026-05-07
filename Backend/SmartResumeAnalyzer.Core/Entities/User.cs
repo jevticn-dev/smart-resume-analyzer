@@ -9,6 +9,7 @@
         public string LastName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+        public int ReminderIntervalDays { get; set; } = 7;
 
         public ICollection<Project> Projects { get; set; } = new List<Project>();
         public ICollection<ApiUsage> ApiUsages { get; set; } = new List<ApiUsage>();

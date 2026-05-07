@@ -15,6 +15,7 @@ import { Toast } from '../../../core/services/toast';
 import { CvVersionDetail, ProjectDetail as ProjectDetailModel } from '../../../core/models/project.models';
 import { AnalysisResultPanel } from '../../../shared/analysis-result-panel/analysis-result-panel';
 import { DatePipe } from '@angular/common';
+import { ExportService } from '../../../core/services/export';
 
 @Component({
   selector: 'app-version-detail',
@@ -33,6 +34,7 @@ export class VersionDetail implements OnInit {
   private errorHandler = inject(ErrorHandler);
   private toast = inject(Toast);
   private router = inject(Router);
+  private exportService = inject(ExportService);
 
   version = signal<CvVersionDetail | null>(null);
   projectTitle = signal<string>('');
@@ -151,6 +153,17 @@ export class VersionDetail implements OnInit {
         this.errorHandler.handle(err);
         this.isSendingEmail.set(false);
       }
+    });
+  }
+
+  exportPdf(): void {
+    const version = this.version();
+    if (!version) return;
+    this.projectService.getProject(this.projectId).subscribe({
+      next: (project) => {
+        this.exportService.exportAnalysisPdf(project, version);
+      },
+      error: (err) => this.errorHandler.handle(err)
     });
   }
 }

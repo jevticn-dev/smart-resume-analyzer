@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, RegisterRequest, UserProfile } from '../models/auth.models';
+import { AuthResponse, ChangePassword, LoginRequest, RegisterRequest, UpdateProfile, UserProfile } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -55,7 +55,18 @@ export class Auth {
     this.currentUser.set({
       email: response.email,
       firstName: response.firstName,
-      lastName: response.lastName
+      lastName: response.lastName,
+      reminderIntervalDays: 7,
+      stats: {
+        totalProjects: 0,
+        totalCvVersions: 0,
+        totalAnalyses: 0,
+        sentApplications: 0,
+        acceptedApplications: 0,
+        declinedApplications: 0,
+        averageMatchScore: 0,
+        remainingAnalysesToday: 0
+      }
     });
     this.isAuthenticated.set(true);
 
@@ -63,7 +74,7 @@ export class Auth {
     const pendingLogId = sessionStorage.getItem('pendingAnalysisLogId');
 
     if (pendingForm) {
-      sessionStorage.removeItem('pendingAnalysisLogId'); // samo ovo briši ovde
+      sessionStorage.removeItem('pendingAnalysisLogId');
       this.router.navigate(['/analyze']);
     } else if (pendingLogId) {
       sessionStorage.removeItem('pendingAnalysisLogId');
@@ -71,5 +82,15 @@ export class Auth {
     } else {
       this.router.navigate(['/dashboard']);
     }
+  }
+
+  updateProfile(dto: UpdateProfile): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, dto).pipe(
+      tap(user => this.currentUser.set(user))
+    );
+  }
+
+  changePassword(dto: ChangePassword): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/change-password`, dto);
   }
 }

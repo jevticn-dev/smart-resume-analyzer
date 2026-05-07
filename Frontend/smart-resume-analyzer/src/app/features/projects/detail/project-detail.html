@@ -23,6 +23,23 @@
             size="small"
             (onClick)="editProject()"
           />
+           @if (canCompare()) {
+            <p-button
+              [label]="compareMode() ? 'Cancel Compare' : 'Compare'"
+              icon="pi pi-arrows-h"
+              [severity]="compareMode() ? 'danger' : 'secondary'"
+              [outlined]="true"
+              size="small"
+              (onClick)="toggleCompareMode()"
+            />
+          }
+          <p-button
+            label="Export PDF"
+            icon="pi pi-download"
+            severity="secondary"
+            size="small"
+            (onClick)="openExportModal()"
+          />
           <p-button
             label="Add CV Version"
             icon="pi pi-upload"
@@ -35,16 +52,6 @@
             size="small"
             (onClick)="openSendModal()"
           />
-          @if (canCompare()) {
-            <p-button
-              [label]="compareMode() ? 'Cancel Compare' : 'Compare'"
-              icon="pi pi-arrows-h"
-              [severity]="compareMode() ? 'danger' : 'secondary'"
-              [outlined]="true"
-              size="small"
-              (onClick)="toggleCompareMode()"
-            />
-          }
         </div>
       </div>
 
@@ -450,5 +457,42 @@
         (onClick)="submitEmail()"
       />
     }
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Export PDF — Select Version"
+  [(visible)]="exportModalOpen"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '500px' }"
+>
+  <div class="version-select-list">
+    @for (v of project()?.cvVersions; track v.id) {
+      <div
+        class="version-select-card"
+        [class.selected]="exportSelectedVersionId() === v.id"
+        (click)="exportSelectedVersionId.set(v.id)"
+      >
+        <div class="version-select-name">Version {{ v.versionNumber }}</div>
+        <div class="version-select-meta">{{ v.originalFileName }}</div>
+      </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      size="small"
+      (onClick)="exportModalOpen.set(false)"
+    />
+    <p-button
+      label="Export"
+      icon="pi pi-download"
+      size="small"
+      [disabled]="!exportSelectedVersionId()"
+      (onClick)="confirmExport()"
+    />
   </ng-template>
 </p-dialog>
