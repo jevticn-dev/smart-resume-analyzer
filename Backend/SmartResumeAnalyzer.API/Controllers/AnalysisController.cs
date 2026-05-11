@@ -3,7 +3,6 @@ using SmartResumeAnalyzer.API.Filters;
 using SmartResumeAnalyzer.Core.DTOs.Analysis;
 using SmartResumeAnalyzer.Core.Exceptions;
 using SmartResumeAnalyzer.Core.Interfaces;
-using SmartResumeAnalyzer.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
@@ -18,20 +17,20 @@ namespace SmartResumeAnalyzer.API.Controllers
         private readonly IPdfParserService _pdfParserService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IProjectService _projectService;
-        private readonly AppDbContext _context;
+        private readonly IAnalysisLogService _analysisLogService;
 
         public AnalysisController(
             IAiAnalysisService aiAnalysisService,
             IPdfParserService pdfParserService,
             IFileStorageService fileStorageService,
             IProjectService projectService,
-            AppDbContext context)
+            IAnalysisLogService analysisLogService)
         {
             _aiAnalysisService = aiAnalysisService;
             _pdfParserService = pdfParserService;
             _fileStorageService = fileStorageService;
             _projectService = projectService;
-            _context = context;
+            _analysisLogService = analysisLogService;
         }
 
         [HttpPost("analyze")]
@@ -65,21 +64,16 @@ namespace SmartResumeAnalyzer.API.Controllers
             using (var stream = cvFile.OpenReadStream())
                 storedFileName = await _fileStorageService.SaveAsync(stream, cvFile.FileName);
 
-            var log = new Core.Entities.AnalysisLog
-            {
-                UserId = userId,
-                IpAddress = ipAddress,
-                JobTitle = request.JobTitle,
-                JobDescription = request.JobDescription,
-                CompanyName = request.CompanyName,
-                SeniorityLevel = request.SeniorityLevel,
-                OriginalFileName = cvFile.FileName,
-                StoredFileName = storedFileName,
-                ResultJson = JsonSerializer.Serialize(result)
-            };
-
-            await _context.AnalysisLogs.AddAsync(log);
-            await _context.SaveChangesAsync();
+            var log = await _analysisLogService.CreateLogAsync(
+                userId,
+                ipAddress,
+                request.JobTitle,
+                request.CompanyName,
+                request.JobDescription,
+                request.SeniorityLevel,
+                cvFile.FileName,
+                storedFileName,
+                JsonSerializer.Serialize(result));
 
             result.AnalysisLogId = log.Id;
 

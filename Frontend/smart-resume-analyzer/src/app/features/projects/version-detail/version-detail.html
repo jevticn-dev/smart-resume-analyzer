@@ -32,6 +32,13 @@
               size="small"
               (onClick)="exportPdf()"
             />
+            <p-button
+              label="Delete Version"
+              icon="pi pi-trash"
+              severity="danger"
+              size="small"
+              (onClick)="confirmDeleteVersion()"
+            />
           </div>
         </div>
         <span class="version-date">{{ version()!.createdAt | date: 'MMM d, y' }}</span>
@@ -80,7 +87,6 @@
   styleClass="send-dialog"
   [style]="{ width: '640px' }"
 >
-  <!-- Step 2 — Choose method -->
   @if (sendModalStep() === 2) {
     <div class="send-modal-body">
       <p class="step-label">How would you like to write the email?</p>
@@ -102,18 +108,8 @@
         </div>
       </div>
     </div>
-    <ng-template pTemplate="footer">
-      <p-button
-        label="Cancel"
-        severity="secondary"
-        [outlined]="true"
-        (onClick)="closeSendModal()"
-        [disabled]="isGeneratingDraft()"
-      />
-    </ng-template>
   }
 
-  <!-- Step 3 — Edit and send -->
   @if (sendModalStep() === 3) {
     <div class="send-modal-body">
       <div class="send-field">
@@ -138,7 +134,18 @@
         <span>{{ version()!.originalFileName }} will be attached</span>
       </div>
     </div>
-    <ng-template pTemplate="footer">
+  }
+  <ng-template pTemplate="footer">
+    @if (sendModalStep() === 2) {
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="closeSendModal()"
+        [disabled]="isGeneratingDraft()"
+      />
+    }
+    @if (sendModalStep() === 3) {
       <p-button
         label="Back"
         severity="secondary"
@@ -153,6 +160,36 @@
         [disabled]="!emailTo || !emailSubject || !emailBody"
         (onClick)="submitEmail()"
       />
-    </ng-template>
-  }
+    }
+  </ng-template>
+</p-dialog>
+
+<!-- Delete Version Confirm Modal -->
+<p-dialog
+  header="Delete CV Version"
+  [(visible)]="deleteModalOpen"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '420px' }"
+>
+  <div class="delete-modal-body">
+    <p>Are you sure you want to delete <strong>V{{ version()?.versionNumber }}</strong>? This action cannot be undone.</p>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelDelete()"
+      [disabled]="isDeleting()"
+    />
+    <p-button
+      label="Delete"
+      icon="pi pi-trash"
+      severity="danger"
+      [loading]="isDeleting()"
+      (onClick)="deleteVersion()"
+    />
+  </ng-template>
 </p-dialog>

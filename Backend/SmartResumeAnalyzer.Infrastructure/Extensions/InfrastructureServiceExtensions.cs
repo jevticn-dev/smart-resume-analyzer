@@ -26,6 +26,8 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
+            services.AddScoped<ICvVersionRepository, CvVersionRepository>();
+            services.AddScoped<IAnalysisLogRepository, AnalysisLogRepository>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRateLimitService, RateLimitService>();
@@ -34,6 +36,8 @@ namespace SmartResumeAnalyzer.Infrastructure.Extensions
             services.AddScoped<IProjectService, ProjectService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IAnalysisLogService, AnalysisLogService>();
+            services.AddScoped<IEmailApplicationService, EmailApplicationService>();
 
             services.AddHostedService<NotificationBackgroundService>();
 

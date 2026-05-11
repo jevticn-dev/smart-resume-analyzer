@@ -49,6 +49,9 @@ export class VersionDetail implements OnInit {
   isGeneratingDraft = signal<boolean>(false);
   isSendingEmail = signal<boolean>(false);
 
+  deleteModalOpen = signal<boolean>(false);
+  isDeleting = signal<boolean>(false);
+
   emailTo = '';
   emailSubject = '';
   emailBody = '';
@@ -164,6 +167,30 @@ export class VersionDetail implements OnInit {
         this.exportService.exportAnalysisPdf(project, version);
       },
       error: (err) => this.errorHandler.handle(err)
+    });
+  }
+
+  confirmDeleteVersion(): void {
+    this.deleteModalOpen.set(true);
+  }
+
+  cancelDelete(): void {
+    this.deleteModalOpen.set(false);
+  }
+
+  deleteVersion(): void {
+    this.isDeleting.set(true);
+    this.projectService.deleteCvVersion(this.projectId, this.versionId).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.deleteModalOpen.set(false);
+        this.toast.success('CV version deleted successfully.');
+        this.router.navigate(['/projects', this.projectId]);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+        this.isDeleting.set(false);
+      }
     });
   }
 }

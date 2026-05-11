@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using SmartResumeAnalyzer.Core.DTOs.Project;
 using SmartResumeAnalyzer.Core.Exceptions;
 using SmartResumeAnalyzer.Core.Interfaces;
-using SmartResumeAnalyzer.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using SmartResumeAnalyzer.Core.Configuration;
 
 namespace SmartResumeAnalyzer.API.Controllers
 {
@@ -20,19 +15,13 @@ namespace SmartResumeAnalyzer.API.Controllers
     {
         private readonly IProjectService _projectService;
         private readonly IFileStorageService _fileStorageService;
-        private readonly AppDbContext _context;
-        private readonly string _basePath;
 
         public ProjectController(
             IProjectService projectService,
-            IFileStorageService fileStorageService,
-            AppDbContext context,
-            IOptions<FileStorageSettings> fileStorageSettings)
+            IFileStorageService fileStorageService)
         {
             _projectService = projectService;
             _fileStorageService = fileStorageService;
-            _context = context;
-            _basePath = fileStorageSettings.Value.BasePath;
         }
 
         [HttpGet]
@@ -94,36 +83,27 @@ namespace SmartResumeAnalyzer.API.Controllers
                 new MemoryStream(fileBytes),
                 cvFile.FileName,
                 storedFileName,
-                dto.Notes,
+                dto.Notes ?? String.Empty,
                 userId
             );
 
             return Ok(project);
         }
 
+        [HttpDelete("{id}/versions/{versionId}")]
+        public async Task<IActionResult> DeleteCvVersion(Guid id, Guid versionId)
+        {
+            var userId = GetUserId();
+            await _projectService.DeleteCvVersionAsync(id, versionId, userId);
+            return NoContent();
+        }
+
         [HttpGet("{id}/versions/{versionId}/cv")]
         public async Task<IActionResult> GetVersionCv(Guid id, Guid versionId)
         {
             var userId = GetUserId();
-
-            var cvVersion = await _context.CvVersions
-                .Include(cv => cv.Project)
-                .FirstOrDefaultAsync(cv =>
-                    cv.Id == versionId &&
-                    cv.ProjectId == id &&
-                    cv.Project.UserId == userId)
-                ?? throw new NotFoundException("CV not found.");
-
-            var filePath = Path.Combine(_basePath, cvVersion.StoredFileName);
-            if (!System.IO.File.Exists(filePath))
-                throw new NotFoundException("CV file not found.");
-
-            var provider = new FileExtensionContentTypeProvider();
-            if (!provider.TryGetContentType(cvVersion.OriginalFileName, out var contentType))
-                contentType = "application/octet-stream";
-
-            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(bytes, contentType, cvVersion.OriginalFileName);
+            var (bytes, contentType, fileName) = await _projectService.GetCvFileAsync(id, versionId, userId);
+            return File(bytes, contentType, fileName);
         }
 
         [HttpGet("{id}/compare")]
