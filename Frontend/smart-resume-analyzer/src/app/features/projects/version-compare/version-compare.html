@@ -85,13 +85,14 @@
                 <i class="pi pi-times-circle" style="color: #EF4444"></i>
                 <span>Weaknesses</span>
                 <span class="section-count">{{ side.analysis.weaknesses.length }}</span>
-                @if (i === 1 && compare()!.versionA.analysis) {
-                  @if (isWorse(side.analysis.weaknesses.length, compare()!.versionA.analysis!.weaknesses.length)) {
-                    <span class="diff-badge diff-down">+{{ side.analysis.weaknesses.length - compare()!.versionA.analysis!.weaknesses.length }}</span>
-                  } @else if (isImproved(side.analysis.weaknesses.length, compare()!.versionA.analysis!.weaknesses.length)) {
-                    <span class="diff-badge diff-up">{{ side.analysis.weaknesses.length - compare()!.versionA.analysis!.weaknesses.length }}</span>
+                  @if (i === 1 && compare()!.versionA.analysis) {
+                    @let wDiff = side.analysis.weaknesses.length - compare()!.versionA.analysis!.weaknesses.length;
+                    @if (wDiff > 0) {
+                      <span class="diff-badge diff-down">+{{ wDiff }}</span>
+                    } @else if (wDiff < 0) {
+                      <span class="diff-badge diff-up">{{ wDiff }}</span>
+                    }
                   }
-                }
               </div>
               <ul class="compare-list">
                 @for (item of side.analysis.weaknesses; track item) {

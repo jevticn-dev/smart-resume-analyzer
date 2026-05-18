@@ -1,0 +1,4 @@
+node_modules
+dist
+.angular
+src/environments/environment.development.ts

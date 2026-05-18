@@ -3,13 +3,60 @@ services:
     image: postgres:16
     container_name: smart-resume-db
     environment:
-      POSTGRES_DB: smartresumedb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: smart-resume-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      JwtSettings__SecretKey: ${JWT_SECRET_KEY}
+      JwtSettings__Issuer: SmartResumeAnalyzer
+      JwtSettings__Audience: SmartResumeAnalyzerUsers
+      JwtSettings__ExpiryDays: 7
+      GroqSettings__ApiKey: ${GROQ_API_KEY}
+      GroqSettings__Model: llama-3.3-70b-versatile
+      GroqSettings__BaseUrl: https://api.groq.com/openai/v1
+      SendGrid__ApiKey: ${SENDGRID_API_KEY}
+      SendGrid__FromEmail: ${SENDGRID_FROM_EMAIL}
+      SendGrid__FromName: ${SENDGRID_FROM_NAME}
+      RateLimitSettings__DailyLimitForGuests: 3
+      RateLimitSettings__DailyLimitForUsers: 10
+      FileStorageSettings__BasePath: uploads/cvs
+      NotificationSettings__CheckIntervalMinutes: 60
+    volumes:
+      - cv_uploads:/app/uploads/cvs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./Frontend/smart-resume-analyzer
+      dockerfile: Dockerfile
+    container_name: smart-resume-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
+  cv_uploads:
