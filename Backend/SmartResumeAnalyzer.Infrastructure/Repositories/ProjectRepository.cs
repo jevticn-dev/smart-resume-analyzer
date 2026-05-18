@@ -42,6 +42,12 @@ namespace SmartResumeAnalyzer.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Project?> GetByIdForUserAsync(Guid projectId, Guid userId)
+        {
+            return await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == projectId && p.UserId == userId);
+        }
+
         public async Task AddAsync(Project project)
         {
             await _context.Projects.AddAsync(project);

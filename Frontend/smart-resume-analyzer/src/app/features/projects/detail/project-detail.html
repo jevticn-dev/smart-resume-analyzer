@@ -23,7 +23,15 @@
             size="small"
             (onClick)="editProject()"
           />
-           @if (canCompare()) {
+          <p-button
+            label="Delete"
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            (onClick)="confirmDeleteProject()"
+          />
+          @if (canCompare()) {
             <p-button
               [label]="compareMode() ? 'Cancel Compare' : 'Compare'"
               icon="pi pi-arrows-h"
@@ -342,7 +350,6 @@
   [style]="{ width: '640px' }"
 >
   <div class="send-modal-body">
-    <!-- Step 1 — Choose CV Version -->
     @if (sendModalStep() === 1 && project()) {
       <p class="step-label">Select a CV version to send</p>
       <div class="version-select-grid">
@@ -373,7 +380,6 @@
       </div>
     }
 
-    <!-- Step 2 — Choose method -->
     @if (sendModalStep() === 2) {
       <p class="step-label">How would you like to write the email?</p>
       <div class="method-cards">
@@ -395,7 +401,6 @@
       </div>
     }
 
-    <!-- Step 3 — Edit and send -->
     @if (sendModalStep() === 3) {
       <div class="send-field">
         <label>To</label>
@@ -460,6 +465,7 @@
   </ng-template>
 </p-dialog>
 
+<!-- Export Modal -->
 <p-dialog
   header="Export PDF — Select Version"
   [(visible)]="exportModalOpen"
@@ -493,6 +499,36 @@
       size="small"
       [disabled]="!exportSelectedVersionId()"
       (onClick)="confirmExport()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Delete Project Confirm Modal -->
+<p-dialog
+  header="Delete Project"
+  [(visible)]="deleteProjectModalOpen"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '420px' }"
+>
+  <div class="delete-modal-body">
+    <p>Are you sure you want to delete <strong>{{ project()?.title }}</strong>? All CV versions and analyses will be permanently deleted. This action cannot be undone.</p>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelDeleteProject()"
+      [disabled]="isDeleting()"
+    />
+    <p-button
+      label="Delete Project"
+      icon="pi pi-trash"
+      severity="danger"
+      [loading]="isDeleting()"
+      (onClick)="deleteProject()"
     />
   </ng-template>
 </p-dialog>

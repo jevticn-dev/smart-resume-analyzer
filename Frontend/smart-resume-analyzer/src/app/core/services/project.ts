@@ -50,6 +50,10 @@ export class Project {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  deleteCvVersion(projectId: string, versionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/versions/${versionId}`);
+  }
+
   convertGuestAnalysis(analysisLogId: string): Observable<ProjectDetail> {
     const dto: ConvertGuestAnalysis = { analysisLogId };
     return this.http.post<ProjectDetail>(`${this.apiUrl}/from-guest-analysis`, dto);

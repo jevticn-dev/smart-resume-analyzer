@@ -12,6 +12,8 @@ namespace SmartResumeAnalyzer.Core.Interfaces
         Task<ProjectDetailDto> AddCvVersionAsync(Guid projectId, Stream cvStream, string originalFileName, string storedFileName, string notes, Guid userId);
         Task<CompareVersionsDto> CompareVersionsAsync(Guid projectId, Guid versionAId, Guid versionBId, Guid userId);
         Task DeleteProjectAsync(Guid projectId, Guid userId);
+        Task DeleteCvVersionAsync(Guid projectId, Guid versionId, Guid userId);
+        Task<(byte[] FileBytes, string ContentType, string FileName)> GetCvFileAsync(Guid projectId, Guid versionId, Guid userId);
         Task<Guid> SaveAnalysisAsProjectAsync(AnalysisResultDto result, string jobTitle, string companyName, string jobDescription, string seniorityLevel, string industry, string storedFileName, string originalFileName, Guid userId, Guid? existingProjectId = null);
         Task<ProjectDetailDto> ConvertGuestAnalysisAsync(Guid analysisLogId, Guid userId);
     }

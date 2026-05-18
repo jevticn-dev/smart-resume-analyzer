@@ -2,13 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartResumeAnalyzer.API.Filters;
 using SmartResumeAnalyzer.Core.DTOs.Email;
-using SmartResumeAnalyzer.Core.DTOs.Project;
 using SmartResumeAnalyzer.Core.Exceptions;
 using SmartResumeAnalyzer.Core.Interfaces;
-using SmartResumeAnalyzer.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 
 namespace SmartResumeAnalyzer.API.Controllers
 {
@@ -17,27 +14,11 @@ namespace SmartResumeAnalyzer.API.Controllers
     [Authorize]
     public class EmailController : ControllerBase
     {
-        private readonly IAiEmailService _aiEmailService;
-        private readonly IEmailService _emailService;
-        private readonly IFileStorageService _fileStorageService;
-        private readonly IPdfParserService _pdfParserService;
-        private readonly IProjectService _projectService;
-        private readonly AppDbContext _context;
+        private readonly IEmailApplicationService _emailApplicationService;
 
-        public EmailController(
-            IAiEmailService aiEmailService,
-            IEmailService emailService,
-            IFileStorageService fileStorageService,
-            IPdfParserService pdfParserService,
-            IProjectService projectService,
-            AppDbContext context)
+        public EmailController(IEmailApplicationService emailApplicationService)
         {
-            _aiEmailService = aiEmailService;
-            _emailService = emailService;
-            _fileStorageService = fileStorageService;
-            _pdfParserService = pdfParserService;
-            _projectService = projectService;
-            _context = context;
+            _emailApplicationService = emailApplicationService;
         }
 
         [HttpPost("generate-draft")]
@@ -45,26 +26,11 @@ namespace SmartResumeAnalyzer.API.Controllers
         public async Task<IActionResult> GenerateDraft([FromBody] GenerateEmailDraftRequestDto dto)
         {
             var userId = GetUserId();
-
-            var project = await _context.Projects
-                .FirstOrDefaultAsync(p => p.Id == dto.ProjectId && p.UserId == userId)
-                ?? throw new NotFoundException("Project not found.");
-
-            var version = await _context.CvVersions
-                .FirstOrDefaultAsync(v => v.Id == dto.VersionId && v.ProjectId == dto.ProjectId)
-                ?? throw new NotFoundException("CV version not found.");
-
-            var cvBytes = await _fileStorageService.ReadAsync(version.StoredFileName);
-            using var stream = new MemoryStream(cvBytes);
-            var cvText = _pdfParserService.ExtractText(stream);
-
-            var draft = await _aiEmailService.GenerateEmailDraftAsync(
-                project.JobTitle,
-                project.CompanyName,
-                project.JobDescription,
-                cvText,
-                GetUserName()
-            );
+            var draft = await _emailApplicationService.GenerateDraftAsync(
+                dto.ProjectId,
+                dto.VersionId,
+                userId,
+                GetUserName());
 
             return Ok(draft);
         }
@@ -73,39 +39,13 @@ namespace SmartResumeAnalyzer.API.Controllers
         public async Task<IActionResult> SendEmail([FromBody] SendEmailRequestDto dto)
         {
             var userId = GetUserId();
+            var result = await _emailApplicationService.SendAsync(
+                dto,
+                userId,
+                GetUserName(),
+                GetUserEmail());
 
-            var project = await _context.Projects
-                .FirstOrDefaultAsync(p => p.Id == dto.ProjectId && p.UserId == userId)
-                ?? throw new NotFoundException("Project not found.");
-
-            var version = await _context.CvVersions
-                .FirstOrDefaultAsync(v => v.Id == dto.VersionId && v.ProjectId == dto.ProjectId)
-                ?? throw new NotFoundException("CV version not found.");
-
-            var cvBytes = await _fileStorageService.ReadAsync(version.StoredFileName);
-
-            var userName = GetUserName();
-            var userEmail = GetUserEmail();
-
-            await _emailService.SendApplicationEmailAsync(
-                dto.ToEmail,
-                userEmail,
-                userName,
-                dto.Subject,
-                dto.Body,
-                cvBytes,
-                version.OriginalFileName
-            );
-
-            if (project.Status == "Draft")
-            {
-                project.Status = "Sent";
-                project.SentAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-            }
-
-            var updatedProject = await _projectService.GetProjectDetailAsync(project.Id, userId);
-            return Ok(updatedProject);
+            return Ok(result);
         }
 
         private Guid GetUserId()

@@ -1,0 +1,5 @@
+base.url=http://localhost:4200
+test.email=YOUR_TEST_EMAIL
+test.password=YOUR_TEST_PASSWORD
+cv.path=src/test/resources/YOUR_CV_FILE.pdf
+hr.email=YOUR_HR_EMAIL

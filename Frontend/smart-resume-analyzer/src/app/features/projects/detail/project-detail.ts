@@ -60,6 +60,9 @@ export class ProjectDetail implements OnInit {
   exportModalOpen = signal(false);
   exportSelectedVersionId = signal<string | null>(null);
 
+  deleteProjectModalOpen = signal<boolean>(false);
+  isDeleting = signal<boolean>(false);
+
   emailTo = '';
   emailSubject = '';
   emailBody = '';
@@ -328,5 +331,29 @@ export class ProjectDetail implements OnInit {
       this.exportService.exportAnalysisPdf(project, version);
       this.exportModalOpen.set(false);
     }
+  }
+
+  confirmDeleteProject(): void {
+    this.deleteProjectModalOpen.set(true);
+  }
+
+  cancelDeleteProject(): void {
+    this.deleteProjectModalOpen.set(false);
+  }
+
+  deleteProject(): void {
+    this.isDeleting.set(true);
+    this.projectService.deleteProject(this.projectId).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.deleteProjectModalOpen.set(false);
+        this.toast.success('Project deleted successfully.');
+        this.router.navigate(['/projects']);
+      },
+      error: (err) => {
+        this.errorHandler.handle(err);
+        this.isDeleting.set(false);
+      }
+    });
   }
 }

@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using SmartResumeAnalyzer.Core.Configuration;
 using SmartResumeAnalyzer.Core.DTOs.Analysis;
 using SmartResumeAnalyzer.Core.DTOs.Project;
 using SmartResumeAnalyzer.Core.Entities;
@@ -12,23 +15,29 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
     public class ProjectService : IProjectService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly ICvVersionRepository _cvVersionRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IAiAnalysisService _aiAnalysisService;
         private readonly IPdfParserService _pdfParserService;
         private readonly AppDbContext _context;
+        private readonly string _basePath;
 
         public ProjectService(
             IProjectRepository projectRepository,
+            ICvVersionRepository cvVersionRepository,
             IFileStorageService fileStorageService,
             IAiAnalysisService aiAnalysisService,
             IPdfParserService pdfParserService,
-            AppDbContext context)
+            AppDbContext context,
+            IOptions<FileStorageSettings> fileStorageSettings)
         {
             _projectRepository = projectRepository;
+            _cvVersionRepository = cvVersionRepository;
             _fileStorageService = fileStorageService;
             _aiAnalysisService = aiAnalysisService;
             _pdfParserService = pdfParserService;
             _context = context;
+            _basePath = fileStorageSettings.Value.BasePath;
         }
 
         public async Task<List<ProjectSummaryDto>> GetProjectsAsync(Guid userId)
@@ -184,6 +193,37 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
 
             await _projectRepository.DeleteAsync(project);
             await _projectRepository.SaveChangesAsync();
+        }
+
+        public async Task<(byte[] FileBytes, string ContentType, string FileName)> GetCvFileAsync(Guid projectId, Guid versionId, Guid userId)
+        {
+            var cvVersion = await _cvVersionRepository.GetByIdWithProjectAsync(versionId, projectId, userId)
+                ?? throw new NotFoundException("CV not found.");
+
+            var filePath = Path.Combine(_basePath, cvVersion.StoredFileName);
+            if (!System.IO.File.Exists(filePath))
+                throw new NotFoundException("CV file not found.");
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(cvVersion.OriginalFileName, out var contentType))
+                contentType = "application/octet-stream";
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            return (bytes, contentType, cvVersion.OriginalFileName);
+        }
+
+        public async Task DeleteCvVersionAsync(Guid projectId, Guid versionId, Guid userId)
+        {
+            var project = await _projectRepository.GetByIdForUserAsync(projectId, userId)
+                ?? throw new NotFoundException("Project not found.");
+
+            var cvVersion = await _cvVersionRepository.GetByIdWithProjectAsync(versionId, projectId, userId)
+                ?? throw new NotFoundException("CV version not found.");
+
+            _fileStorageService.Delete(cvVersion.StoredFileName);
+
+            _context.CvVersions.Remove(cvVersion);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Guid> SaveAnalysisAsProjectAsync(AnalysisResultDto result, string jobTitle, string companyName, string jobDescription, string seniorityLevel, string industry, string storedFileName, string originalFileName, Guid userId, Guid? existingProjectId = null)
