@@ -19,6 +19,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
             string companyName,
             string jobDescription,
             string seniorityLevel,
+            string industry,
             string originalFileName,
             string storedFileName,
             string resultJson)
@@ -31,6 +32,7 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 CompanyName = companyName,
                 JobDescription = jobDescription,
                 SeniorityLevel = seniorityLevel,
+                Industry = industry,
                 OriginalFileName = originalFileName,
                 StoredFileName = storedFileName,
                 ResultJson = resultJson

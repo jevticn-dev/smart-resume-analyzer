@@ -302,7 +302,8 @@ namespace SmartResumeAnalyzer.Infrastructure.Services
                 JobTitle = log.JobTitle,
                 CompanyName = log.CompanyName,
                 JobDescription = log.JobDescription,
-                Seniority = log.SeniorityLevel
+                Seniority = log.SeniorityLevel,
+                Industry = log.Industry
             };
 
             var cvVersion = new CvVersion

@@ -9,6 +9,7 @@
         public string JobDescription { get; set; } = string.Empty;
         public string CompanyName { get; set; } = string.Empty;
         public string SeniorityLevel { get; set; } = string.Empty;
+        public string Industry { get; set; } = string.Empty;
         public string OriginalFileName { get; set; } = string.Empty;
         public string StoredFileName { get; set; } = string.Empty;
         public string ResultJson { get; set; } = string.Empty;
