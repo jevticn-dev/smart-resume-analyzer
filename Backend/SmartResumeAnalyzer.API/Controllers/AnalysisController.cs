@@ -71,6 +71,7 @@ namespace SmartResumeAnalyzer.API.Controllers
                 request.CompanyName,
                 request.JobDescription,
                 request.SeniorityLevel,
+                request.Industry ?? string.Empty,
                 cvFile.FileName,
                 storedFileName,
                 JsonSerializer.Serialize(result));

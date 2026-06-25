@@ -11,6 +11,7 @@ namespace SmartResumeAnalyzer.Core.Interfaces
             string companyName,
             string jobDescription,
             string seniorityLevel,
+            string industry,
             string originalFileName,
             string storedFileName,
             string resultJson);

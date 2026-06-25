@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartResumeAnalyzer.API.Filters;
 using SmartResumeAnalyzer.Core.DTOs.Project;
 using SmartResumeAnalyzer.Core.Exceptions;
 using SmartResumeAnalyzer.Core.Interfaces;
@@ -65,6 +66,7 @@ namespace SmartResumeAnalyzer.API.Controllers
         }
 
         [HttpPost("{id}/versions")]
+        [ServiceFilter(typeof(RateLimitFilter))]
         public async Task<IActionResult> AddCvVersion(Guid id, [FromForm] AddCvVersionDto dto, IFormFile cvFile)
         {
             var userId = GetUserId();
