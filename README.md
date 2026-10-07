@@ -1,35 +1,35 @@
 # SmartResumeAnalyzer
 
-AI platforma za analizu CV-ja i praćenje prijava za posao. Korisnik unosi naziv pozicije, opis posla i PDF CV, a platforma vraća score poklapanja, prednosti, slabosti, nedostajuće ključne reči i predloge za poboljšanje.
+An AI platform for CV analysis and job application tracking. The user enters a job title, job description and a PDF CV, and the platform returns a match score, strengths, weaknesses, missing keywords and suggestions for improvement.
 
-## Funkcionalnosti
+## Features
 
-- **AI Analiza CV-ja** — score poklapanja, prednosti/slabosti, nedostajuće ključne reči i predlozi za poboljšanje (Groq / LLaMA 3.3 70B)
-- **Gost mod** — analiza bez registracije (3 analize dnevno po IP adresi)
-- **Upravljanje projektima** — organizovanje prijava po kompaniji i poziciji
-- **Verzionisanje CV-ja** — više verzija CV-ja po projektu sa praćenjem napretka
-- **Poređenje verzija** — uporedno poređenje analiza dve verzije CV-ja
-- **Slanje prijava emailom** — AI generisani ili ručno napisani email putem SendGrid-a
-- **Notifikacije** — automatski podsetnici za prijave u nacrtu i praćenje odgovora
-- **Export PDF** — izvoz rezultata analize kao formatiran PDF dokument
-- **Korisnički profil** — statistike sa istorijom prijava i trendovima score-ova
+- **AI CV Analysis** — match score, strengths/weaknesses, missing keywords and suggestions for improvement (Groq / LLaMA 3.3 70B)
+- **Guest mode** — analysis without registration (3 analyses per day per IP address)
+- **Project management** — organizing applications by company and position
+- **CV versioning** — multiple CV versions per project with progress tracking
+- **Version comparison** — side-by-side comparison of the analyses of two CV versions
+- **Sending applications by email** — AI-generated or manually written email via SendGrid
+- **Notifications** — automatic reminders for draft applications and response follow-up
+- **PDF export** — exporting analysis results as a formatted PDF document
+- **User profile** — statistics with application history and score trends
 
-## Tehnologije
+## Technologies
 
-| Sloj | Tehnologija |
+| Layer | Technology |
 |------|-------------|
-| Frontend | Angular 20 + PrimeNG 20 (Aura tema) |
+| Frontend | Angular 20 + PrimeNG 20 (Aura theme) |
 | Backend | ASP.NET Core 10 — Clean Architecture |
-| Baza podataka | PostgreSQL 16 + Entity Framework Core |
+| Database | PostgreSQL 16 + Entity Framework Core |
 | AI | Groq API — LLaMA 3.3 70B Versatile |
 | Email | SendGrid |
-| Autentikacija | JWT tokeni |
-| Testovi | Selenium WebDriver — Java + JUnit 5 + Maven |
-| Kontejnerizacija | Docker + Docker Compose |
+| Authentication | JWT tokens |
+| Tests | Selenium WebDriver — Java + JUnit 5 + Maven |
+| Containerization | Docker + Docker Compose |
 
-## Arhitektura
+## Architecture
 
-### Infrastruktura
+### Infrastructure
 
 ```mermaid
 graph LR
@@ -41,7 +41,7 @@ graph LR
         DB[("PostgreSQL 16<br/>Port 5432")]
     end
 
-    subgraph EXT["Eksterni servisi"]
+    subgraph EXT["External services"]
         GROQ["Groq API<br/>LLaMA 3.3 70B"]
         SG["SendGrid<br/>Email"]
     end
@@ -57,102 +57,102 @@ graph LR
 
 ```mermaid
 graph TB
-    API["API sloj<br/>Controlleri · Filteri · Middleware"]
-    INF["Infrastructure sloj<br/>Servisi · Repozitorijumi · EF Core · Background servisi"]
-    CORE["Core sloj<br/>Entiteti · Interfejsi · DTOs · Settings"]
+    API["API layer<br/>Controllers · Filters · Middleware"]
+    INF["Infrastructure layer<br/>Services · Repositories · EF Core · Background services"]
+    CORE["Core layer<br/>Entities · Interfaces · DTOs · Settings"]
 
     API --> INF
     INF --> CORE
-    API -.->|"zavisi samo od interfejsa"| CORE
+    API -.->|"depends only on interfaces"| CORE
 ```
 
-### Tok analize CV-ja
+### CV analysis flow
 
 ```mermaid
 sequenceDiagram
-    actor K as Korisnik
+    actor K as User
     participant FE as Frontend
     participant BE as Backend
     participant AI as Groq API
     participant DB as PostgreSQL
 
-    K->>FE: Unosi poziciju, opis i PDF
+    K->>FE: Enters position, description and PDF
     FE->>BE: POST /api/analysis/analyze
-    BE->>AI: Šalje tekst CV-ja + opis posla
-    AI-->>BE: Vraća JSON analizu
-    BE->>DB: Čuva AnalysisLog
-    BE-->>FE: Vraća rezultat + analysisLogId
-    FE-->>K: Prikazuje score i detalje
+    BE->>AI: Sends CV text + job description
+    AI-->>BE: Returns JSON analysis
+    BE->>DB: Saves AnalysisLog
+    BE-->>FE: Returns result + analysisLogId
+    FE-->>K: Displays score and details
 
-    alt Registrovani korisnik
-        K->>FE: Konvertuje u projekat
+    alt Registered user
+        K->>FE: Converts to project
         FE->>BE: POST /api/projects/convert-guest
-        BE->>DB: Kreira projekat i verziju
+        BE->>DB: Creates project and version
     end
 ```
 
-## Preduslovi
+## Prerequisites
 
-- [Docker](https://www.docker.com/get-started) i Docker Compose
+- [Docker](https://www.docker.com/get-started) and Docker Compose
 - Git
 
-Za lokalni razvoj bez Dockera:
-- [Node.js 20+](https://nodejs.org/) i Angular CLI
+For local development without Docker:
+- [Node.js 20+](https://nodejs.org/) and Angular CLI
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - PostgreSQL 16
 
-## Pokretanje sa Dockerom
+## Running with Docker
 
-### 1. Kloniranje repozitorijuma
+### 1. Cloning the repository
 
 ```bash
 git clone https://github.com/jevticn-dev/smart-resume-analyzer.git
 cd smart-resume-analyzer
 ```
 
-### 2. Konfiguracija environment varijabli
+### 2. Configuring environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Izmeniti `.env` i popuniti vrednosti:
+Edit `.env` and fill in the values:
 
-| Varijabla | Opis |
+| Variable | Description |
 |-----------|------|
-| `POSTGRES_PASSWORD` | Lozinka za PostgreSQL |
-| `JWT_SECRET_KEY` | JWT ključ za potpisivanje tokena (minimum 32 karaktera) |
-| `GROQ_API_KEY` | Groq API ključ — kreirati na [console.groq.com](https://console.groq.com) |
-| `SENDGRID_API_KEY` | SendGrid API ključ — kreirati na [sendgrid.com](https://sendgrid.com) |
-| `SENDGRID_FROM_EMAIL` | Verifikovani email sender u SendGrid nalogu |
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET_KEY` | JWT key for signing tokens (minimum 32 characters) |
+| `GROQ_API_KEY` | Groq API key — create one at [console.groq.com](https://console.groq.com) |
+| `SENDGRID_API_KEY` | SendGrid API key — create one at [sendgrid.com](https://sendgrid.com) |
+| `SENDGRID_FROM_EMAIL` | Verified email sender in the SendGrid account |
 
-### 3. Pokretanje
+### 3. Running
 
 ```bash
 docker compose up --build
 ```
 
-Aplikacija će biti dostupna na **http://localhost**.
+The application will be available at **http://localhost**.
 
-> Prvo pokretanje traje nekoliko minuta — backend čeka da PostgreSQL bude spreman pre primene migracija.
+> The first run takes a few minutes — the backend waits for PostgreSQL to be ready before applying migrations.
 
-### Zaustavljanje
+### Stopping
 
 ```bash
 docker compose down
 ```
 
-Za brisanje svih podataka (baza i uploadovani CV-jevi):
+To delete all data (database and uploaded CVs):
 
 ```bash
 docker compose down -v
 ```
 
-## Lokalni razvoj (bez Dockera)
+## Local development (without Docker)
 
-### Baza podataka
+### Database
 
-Pokrenuti samo bazu:
+Run only the database:
 
 ```bash
 docker compose up postgres
@@ -165,7 +165,7 @@ cd Backend/SmartResumeAnalyzer.API
 dotnet run
 ```
 
-Backend radi na `https://localhost:7139`. Koristi `appsettings.Development.json` — kopirati iz `appsettings.json` i popuniti vrednosti.
+The backend runs at `https://localhost:7139`. It uses `appsettings.Development.json` — copy it from `appsettings.json` and fill in the values.
 
 ### Frontend
 
@@ -175,46 +175,46 @@ npm install --legacy-peer-deps
 ng serve
 ```
 
-Frontend radi na `http://localhost:4200`.
+The frontend runs at `http://localhost:4200`.
 
-## Pokretanje Selenium testova
+## Running Selenium tests
 
-Testovi zahtevaju pokrenute sve tri komponente aplikacije (frontend + backend + baza).
+The tests require all three application components to be running (frontend + backend + database).
 
-### 1. Konfiguracija testova
+### 1. Test configuration
 
 ```bash
 cd Selenuim-Tests/src/test/resources
 cp test.properties.example test.properties
 ```
 
-Izmeniti `test.properties`:
+Edit `test.properties`:
 
-| Svojstvo | Opis |
+| Property | Description |
 |----------|------|
-| `test.email` | Email postojećeg test korisnika |
-| `test.password` | Lozinka test korisnika |
-| `cv.path` | Putanja do PDF CV fajla koji se koristi u testovima |
-| `hr.email` | Email adresa koja se koristi kao HR primalac u email testovima |
+| `test.email` | Email of an existing test user |
+| `test.password` | Test user password |
+| `cv.path` | Path to the PDF CV file used in the tests |
+| `hr.email` | Email address used as the HR recipient in email tests |
 
-Postaviti PDF CV fajl u `Selenuim-Tests/src/test/resources/` i ažurirati `cv.path`.
+Place a PDF CV file in `Selenuim-Tests/src/test/resources/` and update `cv.path`.
 
-### 2. Pokretanje testova
+### 2. Running the tests
 
 ```bash
 cd Selenuim-Tests
 mvn test
 ```
 
-Pokretanje jedne test klase:
+Running a single test class:
 
 ```bash
 mvn test -Dtest=FullFlowTest
 ```
 
-> Testovi se pokreću u Firefox-u. WebDriverManager automatski preuzima odgovarajući driver.
+> The tests run in Firefox. WebDriverManager automatically downloads the appropriate driver.
 
-## Struktura projekta
+## Project structure
 
 ```
 smart-resume-analyzer/
@@ -268,19 +268,19 @@ smart-resume-analyzer/
 └── README.md
 ```
 
-## Ključne arhitekturalne odluke
+## Key architectural decisions
 
-- **Gost analiza bez ponovnog AI poziva** — `AnalysisLog` tabela čuva svaki AI odgovor; frontend čuva samo `analysisLogId` i konvertuje u projekat pri registraciji bez novog AI poziva
-- **PDF fajlovi van wwwroot** — CV fajlovi se čuvaju u `uploads/cvs/`, dostupni isključivo kroz controller; nikada se ne serviraju kao statički fajlovi
-- **Clean Architecture granica** — `IFormFile` nije u Core sloju; rukovanje fajlovima ostaje u API sloju
-- **Rate limiting** — `RateLimitFilter` beleži poziv samo pri uspešnom odgovoru; deli se između AI analize i AI generisanja emaila
-- **Notifikacije putem pollinga** — polling na 60 sekundi umesto SignalR-a; podsetnici su vremenski tolerantni (na nivou dana), WebSocket infrastruktura nije opravdana
-- **Arhitektura controllera** — svi controlleri pristupaju bazi isključivo kroz servisni sloj; nema direktnog `AppDbContext` u controllerima
-- **Docker mreža** — Nginx proxy-uje `/api/` zahteve na backend kontejner; browser komunicira sa jednim origin-om, bez CORS problema
+- **Guest analysis without a repeated AI call** — the `AnalysisLog` table stores every AI response; the frontend keeps only the `analysisLogId` and converts it into a project upon registration without a new AI call
+- **PDF files outside wwwroot** — CV files are stored in `uploads/cvs/`, accessible exclusively through a controller; they are never served as static files
+- **Clean Architecture boundary** — `IFormFile` is not in the Core layer; file handling stays in the API layer
+- **Rate limiting** — `RateLimitFilter` records a call only on a successful response; it is shared between AI analysis and AI email generation
+- **Notifications via polling** — 60-second polling instead of SignalR; reminders are time-tolerant (day-level), so WebSocket infrastructure is not justified
+- **Controller architecture** — all controllers access the database exclusively through the service layer; there is no direct `AppDbContext` in controllers
+- **Docker network** — Nginx proxies `/api/` requests to the backend container; the browser communicates with a single origin, without CORS issues
 
-## Napomene
+## Notes
 
-- **SendGrid besplatan plan** — 100 emailova dnevno; za produkciju potreban plaćeni plan
-- **Gmail sender** — emailovi mogu završiti u spam bez SendGrid Domain Authentication-a sa custom domenom
-- **Groq API** — besplatan tier sa ograničenjima; pratiti potrošnju na [console.groq.com](https://console.groq.com)
-- **JWT ključ** — koristiti kriptografski jak ključ od minimum 32 karaktera u produkciji
+- **SendGrid free plan** — 100 emails per day; a paid plan is required for production
+- **Gmail sender** — emails may end up in spam without SendGrid Domain Authentication with a custom domain
+- **Groq API** — free tier with limitations; monitor usage at [console.groq.com](https://console.groq.com)
+- **JWT key** — use a cryptographically strong key of at least 32 characters in production
